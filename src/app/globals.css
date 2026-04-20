@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* 100ms Theme Design System */
+:root {
+  /* Default to Dark Mode */
+  --background: #0B0E14;
+  /* 100ms very dark background */
+  --foreground: #FFFFFF;
+  --foreground-muted: #A0AAB2;
+  --card: #151A24;
+  --border: #2B3544;
+  --border-light: #3E4B5E;
+
+  /* 100ms Blue Accents */
+  --accent: #2D8CFF;
+  --accent-hover: #1A75E5;
+  --accent-light: #5B9DFF;
+  --primary: #2D8CFF;
+  --secondary: #A0AAB2;
+
+  /* Blue Gradients */
+  --gradient-start: #2D8CFF;
+  --gradient-end: #5B9DFF;
+
+  /* Effects */
+  --blur: 20px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.4);
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Keep same colors since we want full dark theme */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-primary: var(--primary);
+
+  /* Custom Colors */
+  --color-gradient-start: var(--gradient-start);
+  --color-gradient-end: var(--gradient-end);
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+
+  /* Spacing & Effects */
+  --blur-sm: 6px;
+  --blur-md: 12px;
+  --blur-lg: 18px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Clean Card Utility */
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  /* rounded-2xl */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(26, 117, 229, 0.4);
+  box-shadow: 0 8px 30px rgba(26, 117, 229, 0.12);
+  transform: translateY(-4px);
+}
+
+/* Blue Gradient Button */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-base);
+  border: none;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+}
+
+/* Clean Input */
+.glass-input {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  color: var(--foreground);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  transition: var(--transition-fast);
+  font-size: 0.95rem;
+}
+
+.glass-input::placeholder {
+  color: var(--foreground-muted);
+}
+
+.glass-input:hover {
+  border-color: var(--accent-light);
+}
+
+.glass-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: white;
+}
