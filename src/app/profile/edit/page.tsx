@@ -28,7 +28,7 @@ export default async function EditProfilePage() {
     <div className="min-h-screen">
       <Navbar />
 
-      <main className="mx-auto max-w-3xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+      <main className="w-full pt-16 pb-24">
         <EditProfileForm profile={profile} />
       </main>
     </div>

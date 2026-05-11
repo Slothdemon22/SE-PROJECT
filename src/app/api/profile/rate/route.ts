@@ -59,35 +59,37 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Build profile context for AI
     const profileContext = `
-Profile Analysis Request:
+# Persona: Senior Talent Strategist & Performance Coach (Elite Tier)
 
-Full Name: ${profile.fullName || 'Not provided'}
-Role: ${profile.role === 'SEEKER' ? 'Talent Seeker' : 'Talent Finder'}
-Department: ${profile.department || 'Not provided'}
-Year: ${profile.year || 'Not provided'}
-Bio: ${profile.bio || 'Not provided'}
-Skills: ${profile.skills && profile.skills.length > 0 ? profile.skills.join(', ') : 'No skills listed'}
-Interests: ${profile.interests && profile.interests.length > 0 ? profile.interests.join(', ') : 'No interests listed'}
-Profile Completeness: ${calculateProfileCompleteness(profile)}%
+You are a world-class Talent Strategist who has reviewed thousands of high-stakes resumes and elite professional profiles. Your goal is to provide a surgical, unforgiving, and brutally honest critique of the following profile. 
 
-Please perform a rigorous, honest, and critical critique of this profile. Be constructive but harsh. Do not give high scores easily — a score above 7 should represent a truly exceptional and complete profile.
+Do NOT be "nice." Do NOT give high scores easily. A score above 7/10 should only be reserved for world-class, complete, and highly optimized profiles. If the profile is generic, sparse, or lacks a clear value proposition, penalize it heavily.
 
-Provide:
-1. An overall rating out of 10 (be conservative and critical)
-2. A critical summary identifying the biggest weaknesses (2-3 sentences)
-3. Three genuine strengths (if any)
-4. Three critical areas for improvement that would actually make a difference for a recruiter
-5. Detailed, actionable feedback on how to make this profile stand out in a competitive market
+### APPLICANT PROFILE DATA:
+- Full Name: ${profile.fullName || 'NOT PROVIDED'}
+- Ecosystem Role: ${profile.role === 'SEEKER' ? 'Talent Seeker (Active)' : 'Talent Finder (Strategic)'}
+- Primary Department: ${profile.department || 'NOT PROVIDED'}
+- Academic Standing: ${profile.year || 'NOT PROVIDED'}
+- Professional Bio: ${profile.bio || 'NOT PROVIDED'}
+- Expert Skills: ${profile.skills && profile.skills.length > 0 ? profile.skills.join(', ') : 'NO SKILLS LISTED'}
+- Strategic Interests: ${profile.interests && profile.interests.length > 0 ? profile.interests.join(', ') : 'NO INTERESTS LISTED'}
+- Calculated System Completeness: ${calculateProfileCompleteness(profile)}%
 
-Format your response EXACTLY as JSON with this structure:
+### CRITIQUE PARAMETERS:
+1. **Rigorous Rating**: Provide an overall score out of 10. Be conservative. 1-3 is poor, 4-6 is mediocre/generic, 7-8 is strong, 9-10 is world-class.
+2. **Brutal Summary**: A 2-3 sentence executive summary that cuts straight to the core weakness of the profile.
+3. **Genuine Strengths**: 3 points that actually work, if any.
+4. **Critical Improvements**: 3 surgical recommendations that would actually move the needle for a high-tier recruiter.
+5. **High-Stakes Feedback**: A detailed, high-fidelity paragraph on how to transform this profile from a generic entry into an elite professional brand.
+
+Format your response EXACTLY as JSON:
 {
-  "rating": <number between 1-10>,
-  "summary": "<brief summary>",
+  "rating": <number 1-10>,
+  "summary": "<surgical weakness summary>",
   "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
   "improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "feedback": "<detailed feedback paragraph>"
+  "feedback": "<detailed strategic narrative feedback>"
 }
 `;
 

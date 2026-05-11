@@ -158,12 +158,14 @@ export function FileUpload({
   }
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('space-y-6', className)}>
       {/* Drop Zone */}
       <Card
         className={cn(
-          'relative border-2 border-dashed transition-colors',
-          dragActive ? 'border-[#1E3A8A] bg-blue-50' : 'border-gray-300',
+          'relative border-2 border-dashed transition-all duration-300 group overflow-hidden',
+          dragActive 
+            ? 'border-blue-500 bg-blue-500/10 scale-[1.02]' 
+            : 'border-white/10 bg-slate-900/40 hover:bg-slate-900/60 hover:border-white/20',
           uploading && 'opacity-50 pointer-events-none'
         )}
         onDragEnter={handleDrag}
@@ -171,30 +173,40 @@ export function FileUpload({
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <div className="p-8 text-center">
-          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        
+        <div className="p-10 text-center relative z-10">
+          <div className={cn(
+            "mx-auto h-16 w-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300",
+            dragActive ? "bg-blue-500 text-white" : "bg-slate-800 text-slate-400 group-hover:text-blue-400 group-hover:bg-slate-700"
+          )}>
+            <Upload className={cn("h-8 w-8", dragActive && "animate-bounce")} />
+          </div>
+          
           <div className="space-y-2">
-            <p className="text-lg font-medium">
+            <p className="text-xl font-bold text-white">
               Drop {category.toLowerCase()} files here or{' '}
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="text-[#1E3A8A] hover:underline font-semibold"
+                className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
               >
                 browse
               </button>
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-400 font-medium">
               Supports {getCategoryDescription(category)}
             </p>
-            <p className="text-xs text-gray-400">
-              Maximum {maxFiles} files
-            </p>
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <Badge variant="outline" className="bg-slate-800/50 border-white/5 text-slate-400">
+                Max {maxFiles} {maxFiles === 1 ? 'file' : 'files'}
+              </Badge>
+            </div>
           </div>
           <input
             ref={inputRef}
             type="file"
-            multiple
+            multiple={maxFiles > 1}
             accept={getAcceptString(category)}
             onChange={handleFileInput}
             className="hidden"
@@ -204,74 +216,79 @@ export function FileUpload({
 
       {/* Error Message */}
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <AlertDescription className="font-medium">{error}</AlertDescription>
         </Alert>
       )}
 
       {/* File List */}
       {files.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
               Selected Files ({files.length}/{maxFiles})
             </h3>
             <Button
               onClick={uploadFiles}
               disabled={uploading || files.length === 0}
               size="sm"
-              className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-4 py-2 transition-all hover:scale-105"
             >
               {uploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
+                  Processing...
                 </>
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload All
+                  Upload Now
                 </>
               )}
             </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-3">
             {files.map((file) => (
-              <Card key={file.id} className="p-4">
+              <Card key={file.id} className="p-4 bg-slate-900/60 border-white/5 backdrop-blur-md rounded-2xl group transition-all hover:bg-slate-900/80">
                 <div className="flex items-center gap-4">
                   {/* Preview/Icon */}
-                  <div className="shrink-0">
+                  <div className="shrink-0 relative">
                     {file.preview ? (
                       <img
                         src={file.preview}
                         alt={file.name}
-                        className="h-16 w-16 object-cover rounded"
+                        className="h-14 w-14 object-cover rounded-xl border border-white/10"
                       />
                     ) : (
-                      <div className="h-16 w-16 flex items-center justify-center bg-gray-100 rounded text-gray-400">
+                      <div className="h-14 w-14 flex items-center justify-center bg-slate-800 rounded-xl text-slate-400 border border-white/10">
                         {getFileIcon(file)}
+                      </div>
+                    )}
+                    {uploading && (
+                      <div className="absolute inset-0 bg-slate-900/60 rounded-xl flex items-center justify-center">
+                        <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
                       </div>
                     )}
                   </div>
 
                   {/* File Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{file.name}</p>
+                    <p className="text-sm font-bold text-white truncate">{file.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {file.type.split('/')[1]?.toUpperCase()}
-                      </Badge>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-[10px] font-black bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded uppercase tracking-tighter">
+                        {file.type.split('/')[1] || 'FILE'}
+                      </span>
+                      <span className="text-xs text-slate-500 font-medium">
                         {formatFileSize(file.size)}
                       </span>
                     </div>
 
                     {/* Progress Bar */}
                     {uploadProgress[file.id] !== undefined && (
-                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="mt-3 w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="bg-[#1E3A8A] h-1.5 rounded-full transition-all"
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 h-1.5 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]"
                           style={{ width: `${uploadProgress[file.id]}%` }}
                         />
                       </div>
@@ -281,7 +298,8 @@ export function FileUpload({
                   {/* Remove Button */}
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    className="h-9 w-9 rounded-xl hover:bg-red-500/10 hover:text-red-400 text-slate-500 transition-colors"
                     onClick={() => removeFile(file.id)}
                     disabled={uploading}
                   >
