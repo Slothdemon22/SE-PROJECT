@@ -47,16 +47,18 @@ export function SignupFormWithValidation() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ email: data.email, password: data.password }),
       })
 
-      if (error) {
-        setError(error.message)
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'Failed to sign up')
       } else {
         // EMAIL VERIFICATION DISABLED - Users can login immediately
         // Uncomment the code below to enable email verification

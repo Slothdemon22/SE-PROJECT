@@ -16,6 +16,8 @@ const VideoCallAcceptedEmail = (EmailTemplates as any).VideoCallAcceptedEmail
 const VideoCallRejectedEmail = (EmailTemplates as any).VideoCallRejectedEmail
 const PaymentSuccessEmail = (EmailTemplates as any).PaymentSuccessEmail
 const JobFilledEmail = (EmailTemplates as any).JobFilledEmail
+const SignupConfirmationEmail = (EmailTemplates as any).SignupConfirmationEmail
+const PasswordResetEmail = (EmailTemplates as any).PasswordResetEmail
 
 const resend = new Resend(RESEND_API_KEY)
 
@@ -274,5 +276,35 @@ export async function sendJobFilledEmail(
     to,
     subject: `Position Filled: ${jobTitle}`,
     react: React.createElement(JobFilledEmail, { applicantName, jobTitle, appUrl }),
+  })
+}
+
+/**
+ * Send signup confirmation email
+ */
+export async function sendSignupConfirmationEmail(
+  to: string,
+  userName: string,
+  confirmationLink: string
+) {
+  return sendEmail({
+    to,
+    subject: `Verify your email for CampusConnect`,
+    react: React.createElement(SignupConfirmationEmail, { userName, confirmationLink }),
+  })
+}
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(
+  to: string,
+  userName: string,
+  resetLink: string
+) {
+  return sendEmail({
+    to,
+    subject: `Reset your password for CampusConnect`,
+    react: React.createElement(PasswordResetEmail, { userName, resetLink }),
   })
 }

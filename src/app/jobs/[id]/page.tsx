@@ -110,7 +110,7 @@ export default async function JobDetailPage({ params }: PageProps) {
   })
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-950">
       <Navbar />
 
       <main className="mx-auto max-w-5xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">

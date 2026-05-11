@@ -1,6 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import Groq from 'groq-sdk';
 
 interface MatchScoreRequest {
   jobTitle: string;
@@ -30,24 +28,21 @@ export async function calculateMatchScore(
   request: MatchScoreRequest
 ): Promise<MatchScoreResponse> {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('Gemini API key not configured');
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      throw new Error('API_KEY not configured for Groq');
     }
 
+    const groq = new Groq({ apiKey });
     const prompt = buildMatchPrompt(request);
-    // Use gemini-2.0-flash-exp (experimental model with wider access)
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-      },
+    
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
     });
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const text = chatCompletion.choices[0].message.content || '{}';
 
     // Parse AI response
     let aiResponse: MatchScoreResponse;

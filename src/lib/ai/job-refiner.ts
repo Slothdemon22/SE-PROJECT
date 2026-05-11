@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 interface JobRefineRequest {
   role: string;
@@ -24,13 +24,12 @@ export interface JobRefineResponse {
  */
 export async function refineJobWithAI(request: JobRefineRequest): Promise<JobRefineResponse> {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY not configured');
+      throw new Error('API_KEY not configured for Groq');
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const groq = new Groq({ apiKey });
 
     const prompt = `You are an expert HR professional and job posting specialist. Refine this job posting to be professional, clear, and attractive to candidates.
 
@@ -76,9 +75,13 @@ IMPORTANT:
 - Ensure tags are relevant and searchable
 - Return ONLY valid JSON`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
+    });
+
+    const text = chatCompletion.choices[0].message.content || '{}';
 
     // Parse JSON response
     const jsonMatch = text.match(/\{[\s\S]*\}/);

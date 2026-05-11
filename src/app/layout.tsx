@@ -11,8 +11,37 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CampusConnect - Connect. Collaborate. Create.",
-  description: "The ultimate platform for university students to discover talent, find opportunities, and collaborate on amazing projects.",
+  title: {
+    default: "Nexvect - AI-Powered Talent Matching",
+    template: "%s | Nexvect"
+  },
+  description: "The premium AI-driven platform for discovering talent, finding jobs, and collaborating on amazing projects. Get smart matches, AI cover letters, and intelligent insights.",
+  keywords: ["AI Jobs", "Talent Matching", "SaaS", "Careers", "Freelance", "Recruitment"],
+  authors: [{ name: "Nexvect Team" }],
+  creator: "Nexvect",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://nexvect.com",
+    title: "Nexvect - AI-Powered Talent Matching",
+    description: "The premium AI-driven platform for discovering talent, finding jobs, and collaborating on amazing projects.",
+    siteName: "Nexvect",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Nexvect - AI-Powered Talent Matching",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nexvect - AI-Powered Talent Matching",
+    description: "The premium AI-driven platform for discovering talent, finding jobs, and collaborating on amazing projects.",
+    images: ["/og-image.png"],
+    creator: "@nexvect",
+  },
 };
 
 export default function RootLayout({

@@ -33,32 +33,32 @@ export function RoleSwitcher({ defaultRole = 'SEEKER', className = '' }: RoleSwi
     <div className={`flex items-center gap-2 glass-card p-1 rounded-full ${className}`}>
       <button
         onClick={() => handleRoleSwitch('SEEKER')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-          activeRole === 'SEEKER' ? 'text-white' : ''
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+          activeRole === 'SEEKER' ? 'text-white shadow-sm' : ''
         }`}
         style={{
           background: activeRole === 'SEEKER' 
-            ? 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))' 
+            ? '#1E3A8A' 
             : 'transparent',
           color: activeRole === 'SEEKER' ? 'white' : 'var(--foreground-muted)',
         }}
       >
-        <Search className="h-4 w-4" />
+        <Search className="h-3.5 w-3.5" />
         <span>Find Work</span>
       </button>
       <button
         onClick={() => handleRoleSwitch('FINDER')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-          activeRole === 'FINDER' ? 'text-white' : ''
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+          activeRole === 'FINDER' ? 'text-white shadow-sm' : ''
         }`}
         style={{
           background: activeRole === 'FINDER' 
-            ? 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))' 
+            ? '#1E3A8A' 
             : 'transparent',
           color: activeRole === 'FINDER' ? 'white' : 'var(--foreground-muted)',
         }}
       >
-        <Briefcase className="h-4 w-4" />
+        <Briefcase className="h-3.5 w-3.5" />
         <span>Post Jobs</span>
       </button>
     </div>

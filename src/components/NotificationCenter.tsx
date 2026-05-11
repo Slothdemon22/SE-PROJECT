@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, Check, CheckCheck, Trash2, X } from 'lucide-react';
 import { Button } from './ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { pusherClient } from '@/lib/pusher/client';
 
 interface Notification {
   id: string;
@@ -19,6 +21,7 @@ interface NotificationCenterProps {
 }
 
 export default function NotificationCenter({ className }: NotificationCenterProps) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -131,19 +134,28 @@ export default function NotificationCenter({ className }: NotificationCenterProp
     }
   }, [isOpen, fetchNotifications]);
 
-  // Poll for new notifications every 30 seconds
+  // Initialize pusher and fetch initial notifications
   useEffect(() => {
     fetchNotifications();
 
-    const interval = setInterval(() => {
-      fetch('/api/notifications?unread=true')
-        .then(res => res.json())
-        .then(data => setUnreadCount(data.unreadCount || 0))
-        .catch(console.error);
-    }, 30000); // 30 seconds
+    if (!user) return;
 
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
+    // Subscribe to real-time notifications via Pusher
+    const channel = pusherClient.subscribe(`user-${user.id}`);
+    
+    channel.bind('new-notification', (newNotification: Notification) => {
+      setNotifications(prev => {
+        // Prevent duplicates if already in state
+        if (prev.some(n => n.id === newNotification.id)) return prev;
+        return [newNotification, ...prev];
+      });
+      setUnreadCount(prev => prev + 1);
+    });
+
+    return () => {
+      pusherClient.unsubscribe(`user-${user.id}`);
+    };
+  }, [fetchNotifications, user]);
 
   const getNotificationIcon = (type: string): string => {
     const icons: Record<string, string> = {
