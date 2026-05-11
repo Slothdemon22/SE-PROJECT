@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Send, X, Plus, Sparkles } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import AIJobRefiner from '@/components/AIJobRefiner'
 
 const JOB_TYPES = [
@@ -301,248 +302,240 @@ export function CreateJobForm({ profileId }: CreateJobFormProps) {
   }
 
   return (
-    <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-      {error && (
-        <div className="glass-card p-4" style={{ 
-          background: 'rgba(239, 68, 68, 0.1)',
-          borderColor: 'rgba(239, 68, 68, 0.3)',
-        }}>
-          <p className="text-sm font-medium" style={{ color: '#dc2626' }}>{error}</p>
+    <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-5xl font-black text-white tracking-tight mb-3">
+            Launch an <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Opportunity</span>
+          </h1>
+          <p className="text-xl text-slate-400 max-w-2xl font-medium">
+            Connect with elite student talent by crafting a high-impact job posting.
+          </p>
         </div>
+        
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            onClick={() => handleSubmit(true)}
+            disabled={loading}
+            className="border-white/10 bg-slate-900/40 text-white hover:bg-slate-800 rounded-2xl px-6 py-6 font-bold"
+          >
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5 mr-2" />}
+            Save Draft
+          </Button>
+          <Button
+            type="button"
+            onClick={() => handleSubmit(false)}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl px-8 py-6 shadow-lg shadow-blue-500/20 transition-all hover:scale-105 active:scale-95"
+          >
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 mr-2" />}
+            Publish Now
+          </Button>
+        </div>
+      </div>
+
+      {error && (
+        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <AlertDescription className="font-bold">{error}</AlertDescription>
+        </Alert>
       )}
 
-      {/* AI Job Generator/Refiner */}
-      <div className="glass-card p-8 space-y-4 border-2" style={{ borderColor: '#8B5CF6' }}>
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">🤖</span>
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Sparkles className="w-6 h-6 text-purple-600" />
-              AI Job Generator
-            </h2>
-            <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-              Let AI help you create a professional, compelling job posting instantly!
-            </p>
+      {/* AI Intelligence Section */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+        <Card className="relative p-8 md:p-12 bg-slate-950/80 border-white/10 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Sparkles className="w-24 h-24 text-blue-400" />
           </div>
-        </div>
+          
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-500/20">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">AI Intelligence Suite</h2>
+              <p className="text-slate-400 font-medium">Instantly generate or refine your posting for maximum impact.</p>
+            </div>
+          </div>
 
-        <AIJobRefiner
-          role={formData.title}
-          currentDescription={formData.description}
-          currentRequirements={formData.requirements}
-          duration={formData.duration}
-          compensation={formData.compensation}
-          type={formData.type}
-          onApply={handleAIResult}
-        />
-
-        <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
-          <p className="text-xs text-purple-800">
-            💡 <strong>Tip:</strong> Enter a job title and click "Generate from Role" to create a complete job posting, or fill in some fields and click "Refine with AI" to improve your existing content!
-          </p>
-        </div>
+          <AIJobRefiner
+            role={formData.title}
+            currentDescription={formData.description}
+            currentRequirements={formData.requirements}
+            duration={formData.duration}
+            compensation={formData.compensation}
+            type={formData.type}
+            onApply={handleAIResult}
+          />
+          
+          <div className="mt-8 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-3">
+             <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
+               <span className="text-[10px] font-black">i</span>
+             </div>
+             <p className="text-xs text-blue-300/80 font-medium leading-relaxed">
+               <strong>Pro Tip:</strong> Enter a target role (e.g., "Fullstack Engineer") and use <strong>Generate from Role</strong> for a complete professional template.
+             </p>
+          </div>
+        </Card>
       </div>
 
-      {/* Basic Information */}
-      <div className="glass-card p-8 space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          Basic Information
-        </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main Content Area */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Core Information */}
+          <Card className="p-8 bg-slate-900/40 border-white/5 backdrop-blur-xl rounded-[2.5rem]">
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-8">Core Opportunity Details</h3>
+            
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-slate-300 ml-1">Official Opportunity Title *</label>
+                <Input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => updateField('title', e.target.value)}
+                  placeholder="e.g. Lead Technical Architect - Fintech Disruptor"
+                  className="bg-slate-950/50 border-white/5 text-white rounded-2xl h-14 px-6 focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
+                  required
+                />
+              </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-            Job Title *
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => updateField('title', e.target.value)}
-            placeholder="e.g., Looking for Full-Stack Developer for EdTech Startup"
-            className="w-full glass-input"
-            required
-            minLength={5}
-            maxLength={200}
-          />
+              <div className="space-y-4">
+                <label className="text-sm font-bold text-slate-300 ml-1">Opportunity Vector *</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {JOB_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => updateField('type', type.value)}
+                      className={cn(
+                        "p-5 text-left rounded-2xl border transition-all duration-300 group/type",
+                        formData.type === type.value 
+                          ? "bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-500/10" 
+                          : "bg-slate-950/50 border-white/5 hover:border-white/10"
+                      )}
+                    >
+                      <h4 className={cn(
+                        "font-black text-sm uppercase tracking-wider mb-2 transition-colors",
+                        formData.type === type.value ? "text-blue-400" : "text-slate-300"
+                      )}>
+                        {type.label}
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium group-hover/type:text-slate-400 transition-colors">
+                        {type.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-sm font-bold text-slate-300">Detailed Vision *</label>
+                  <span className="text-[10px] font-black text-slate-600 uppercase">
+                    {formData.description.length}/5000
+                  </span>
+                </div>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  className="bg-slate-950/50 border-white/5 text-white rounded-3xl w-full min-h-[240px] p-8 focus:ring-2 focus:ring-blue-500/50 transition-all resize-none placeholder:text-slate-600 leading-relaxed"
+                  placeholder="Describe the mission, the impact, and the journey..."
+                  required
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Strategic Requirements */}
+          <Card className="p-8 bg-slate-900/40 border-white/5 backdrop-blur-xl rounded-[2.5rem]">
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-8">Surgical Requirements</h3>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-sm font-bold text-slate-300">Technical & Soft Skills</label>
+                <span className="text-[10px] font-black text-slate-600 uppercase">
+                  {formData.requirements.length}/2000
+                </span>
+              </div>
+              <textarea
+                value={formData.requirements}
+                onChange={(e) => updateField('requirements', e.target.value)}
+                className="bg-slate-950/50 border-white/5 text-white rounded-3xl w-full min-h-[160px] p-8 focus:ring-2 focus:ring-blue-500/50 transition-all resize-none placeholder:text-slate-600"
+                placeholder="List the essential skills and outcome-oriented requirements..."
+              />
+            </div>
+          </Card>
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-            Opportunity Type *
-          </label>
-          <div className="grid md:grid-cols-2 gap-4">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type.value}
-                type="button"
-                onClick={() => updateField('type', type.value)}
-                className={`glass-card p-4 text-left transition-all ${
-                  formData.type === type.value ? 'ring-2' : ''
-                }`}
-                style={{
-                  outlineColor: formData.type === type.value ? 'var(--accent)' : 'transparent',
-                  borderColor: formData.type === type.value ? 'var(--accent)' : 'var(--border)',
-                }}
-              >
-                <h3 className="font-semibold mb-1" style={{ 
-                  color: formData.type === type.value ? 'var(--accent)' : 'var(--foreground)' 
-                }}>
-                  {type.label}
-                </h3>
-                <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-                  {type.description}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Sidebar Context */}
+        <div className="lg:col-span-4 space-y-8">
+          {/* Logistics */}
+          <Card className="p-8 bg-slate-900/40 border-white/5 backdrop-blur-xl rounded-[2.5rem]">
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-8">Operational Logistics</h3>
+            
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Timeline</label>
+                <Input
+                  type="text"
+                  value={formData.duration}
+                  onChange={(e) => updateField('duration', e.target.value)}
+                  className="bg-slate-950/50 border-white/5 text-white rounded-xl h-12 px-4 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  placeholder="e.g. 3 Months"
+                />
+              </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-            Description *
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => updateField('description', e.target.value)}
-            placeholder="Describe the opportunity, responsibilities, and what you're looking for..."
-            rows={6}
-            className="w-full glass-input resize-none"
-            required
-            minLength={50}
-            maxLength={5000}
-          />
-          <p className="text-sm mt-1" style={{ color: 'var(--foreground-muted)' }}>
-            {formData.description.length}/5000 characters (minimum 50) - Provide a detailed description
-          </p>
-        </div>
-      </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Compensation</label>
+                <Input
+                  type="text"
+                  value={formData.compensation}
+                  onChange={(e) => updateField('compensation', e.target.value)}
+                  className="bg-slate-950/50 border-white/5 text-white rounded-xl h-12 px-4 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  placeholder="Unpaid / $500 p/m"
+                />
+              </div>
 
-      {/* Additional Details */}
-      <div className="glass-card p-8 space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          Additional Details
-        </h2>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Location Strategy</label>
+                <select
+                  value={formData.location}
+                  onChange={(e) => updateField('location', e.target.value)}
+                  className="bg-slate-950/50 border-white/5 text-white rounded-xl w-full h-12 px-4 focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="" className="bg-slate-900">Select Location</option>
+                  <option value="Remote" className="bg-slate-900">100% Remote</option>
+                  <option value="On-campus" className="bg-slate-900">On-campus Only</option>
+                  <option value="Hybrid" className="bg-slate-900">Hybrid Model</option>
+                </select>
+              </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-              Requirements/Skills
-            </label>
-            <textarea
-              value={formData.requirements}
-              onChange={(e) => updateField('requirements', e.target.value)}
-              placeholder="e.g., React, Node.js, 2+ years experience"
-              rows={4}
-              className="w-full glass-input resize-none"
-              maxLength={2000}
-            />
-            <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
-              {formData.requirements.length}/2000 characters
-            </p>
-          </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Team Dynamics</label>
+                <Input
+                  type="text"
+                  value={formData.teamSize}
+                  onChange={(e) => updateField('teamSize', e.target.value)}
+                  className="bg-slate-950/50 border-white/5 text-white rounded-xl h-12 px-4 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  placeholder="e.g. 3-4 Researchers"
+                />
+              </div>
+            </div>
+          </Card>
 
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-              Duration/Timeline
-            </label>
-            <input
-              type="text"
-              value={formData.duration}
-              onChange={(e) => updateField('duration', e.target.value)}
-              placeholder="e.g., 3-6 months, Full semester"
-              className="w-full glass-input"
-              maxLength={100}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-              Compensation (Optional)
-            </label>
-            <input
-              type="text"
-              value={formData.compensation}
-              onChange={(e) => updateField('compensation', e.target.value)}
-              placeholder="e.g., Unpaid, $500/month, Equity"
-              className="w-full glass-input"
-              maxLength={200}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-              Location
-            </label>
-            <select
-              value={formData.location}
-              onChange={(e) => updateField('location', e.target.value)}
-              className="w-full glass-input"
-            >
-              <option value="">Select location</option>
-              <option value="Remote">Remote</option>
-              <option value="On-campus">On-campus</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-              Team Size Needed
-            </label>
-            <input
-              type="text"
-              value={formData.teamSize}
-              onChange={(e) => updateField('teamSize', e.target.value)}
-              placeholder="e.g., 2-3 members, 1 developer"
-              className="w-full glass-input"
-              maxLength={100}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-              Tags
-            </label>
+          {/* Searchability */}
+          <Card className="p-8 bg-slate-900/40 border-white/5 backdrop-blur-xl rounded-[2.5rem]">
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-6">Strategic Tags</h3>
             <TagsInput
               tags={formData.tags}
               onChange={(tags: string) => updateField('tags', tags)}
             />
-            <p className="text-sm mt-1" style={{ color: 'var(--foreground-muted)' }}>
-              Add relevant tags to help candidates find your opportunity
-            </p>
-          </div>
+          </Card>
         </div>
       </div>
-
-      {/* Action Buttons */}
-      <div className="flex gap-4 justify-end">
-        <button
-          type="button"
-          onClick={() => handleSubmit(true)}
-          disabled={loading}
-          className="glass-card px-8 py-3 font-semibold flex items-center gap-2 transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Save className="h-5 w-5" />
-          )}
-          <span>Save as Draft</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleSubmit(false)}
-          disabled={loading}
-          className="btn-gradient px-8 py-3 font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
-          <span>Publish Job</span>
-        </button>
-      </div>
-    </form>
+    </div>
   )
 }
 

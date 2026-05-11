@@ -48,50 +48,50 @@ export async function getJobRecommendations(
 
     const groq = new Groq({ apiKey });
 
-    const prompt = `You are a career advisor AI. Analyze this user's profile and recommend the best jobs for them.
+    const prompt = `
+# Persona: Executive Career Strategist & Portfolio Manager (Elite Tier)
 
-USER PROFILE:
+You are a top-tier career architect responsible for placing elite talent in high-impact roles. Your analysis must be surgical, strategic, and focused on both immediate fit and long-term trajectory.
+
+### USER PROFILE (THE TALENT):
 - Name: ${profile.fullName || 'N/A'}
-- Bio: ${profile.bio || 'N/A'}
-- Skills: ${profile.skills.join(', ') || 'None'}
-- Interests: ${profile.interests.join(', ') || 'None'}
-- Department: ${profile.department || 'N/A'}
-- Year: ${profile.year || 'N/A'}
+- Narrative: ${profile.bio || 'N/A'}
+- Expert Skills: ${profile.skills.join(', ') || 'None'}
+- Strategic Interests: ${profile.interests.join(', ') || 'None'}
+- Academic Focus: ${profile.department || 'N/A'}
+- Career Stage: ${profile.year || 'N/A'}
 
-AVAILABLE JOBS:
+### AVAILABLE ECOSYSTEM OPPORTUNITIES:
 ${jobs.map((job, idx) => `
-${idx + 1}. JOB ID: ${job.id}
-   Title: ${job.title}
-   Type: ${job.type}
-   Location: ${job.location || 'Not specified'}
-   Description: ${job.description.substring(0, 300)}...
-   Requirements: ${job.requirements || 'Not specified'}
-   Tags: ${Array.isArray(job.tags) ? job.tags.join(', ') : 'No tags'}
+[ID: ${job.id}] ${job.title.toUpperCase()}
+- Format: ${job.type} | Location: ${job.location || 'Distributed'}
+- Context: ${job.description.substring(0, 400)}...
+- Requirements: ${job.requirements || 'Standard'}
+- Tags: ${Array.isArray(job.tags) ? job.tags.join(', ') : 'None'}
 `).join('\n')}
 
-Analyze ALL jobs and provide recommendations. Return your response in this EXACT JSON format:
+### STRATEGIC OBJECTIVES:
+1. **Surgical Alignment**: Analyze all jobs and identify the top 5 maximum.
+2. **Impact Scoring**: Rate matches from 0-100. Be conservative. 90+ is a perfect alignment.
+3. **Strategic Reasoning**: Explain EXACTLY why this role matches the talent's narrative and goals.
+4. **Growth Vector**: Identify the specific professional evolution this role offers.
+5. **Career Architecture**: Provide high-level career insights and identifying critical skill gaps.
+
+Return response in EXACT JSON format:
 {
   "recommendations": [
     {
-      "jobId": "job_id_here",
-      "score": 95,
-      "reasoning": "Why this job is perfect for the user (2-3 sentences)",
-      "matchHighlights": ["Skill match", "Interest alignment", "Career growth"],
-      "growthPotential": "What the user will learn and how they'll grow"
+      "jobId": "job_id",
+      "score": <number 0-100>,
+      "reasoning": "<strategic alignment narrative>",
+      "matchHighlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "growthPotential": "<evolution narrative>"
     }
   ],
-  "careerInsights": "Overall career advice for this user (2-3 sentences)",
+  "careerInsights": "<high-level career strategy>",
   "topSkillsToLearn": ["Skill 1", "Skill 2", "Skill 3"]
 }
-
-IMPORTANT:
-- Recommend TOP 5 jobs maximum (or fewer if less than 5 jobs available)
-- Score from 0-100 (higher = better match)
-- Order by score (highest first)
-- Be specific and personalized
-- Consider career growth and learning opportunities
-- Match skills, interests, and career stage
-- Return ONLY valid JSON, no markdown or extra text`;
+`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],

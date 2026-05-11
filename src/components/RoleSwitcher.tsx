@@ -30,35 +30,27 @@ export function RoleSwitcher({ defaultRole = 'SEEKER', className = '' }: RoleSwi
   }
 
   return (
-    <div className={`flex items-center gap-2 glass-card p-1 rounded-full ${className}`}>
+    <div className={`flex items-center gap-1.5 p-1.5 bg-slate-900/60 border border-white/5 backdrop-blur-md rounded-full shadow-inner ${className}`}>
       <button
         onClick={() => handleRoleSwitch('SEEKER')}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-          activeRole === 'SEEKER' ? 'text-white shadow-sm' : ''
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+          activeRole === 'SEEKER' 
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
         }`}
-        style={{
-          background: activeRole === 'SEEKER' 
-            ? '#1E3A8A' 
-            : 'transparent',
-          color: activeRole === 'SEEKER' ? 'white' : 'var(--foreground-muted)',
-        }}
       >
-        <Search className="h-3.5 w-3.5" />
+        <Search className="h-3.5 w-3.5" strokeWidth={3} />
         <span>Find Work</span>
       </button>
       <button
         onClick={() => handleRoleSwitch('FINDER')}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-          activeRole === 'FINDER' ? 'text-white shadow-sm' : ''
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+          activeRole === 'FINDER' 
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
         }`}
-        style={{
-          background: activeRole === 'FINDER' 
-            ? '#1E3A8A' 
-            : 'transparent',
-          color: activeRole === 'FINDER' ? 'white' : 'var(--foreground-muted)',
-        }}
       >
-        <Briefcase className="h-3.5 w-3.5" />
+        <Briefcase className="h-3.5 w-3.5" strokeWidth={3} />
         <span>Post Jobs</span>
       </button>
     </div>

@@ -1,5 +1,14 @@
 import * as mammoth from 'mammoth';
 
+// Polyfills for pdf-parse in Node.js environment to prevent ReferenceErrors
+if (typeof global !== 'undefined') {
+  if (!(global as any).DOMMatrix) (global as any).DOMMatrix = class DOMMatrix {};
+  if (!(global as any).ImageData) (global as any).ImageData = class ImageData {};
+  if (!(global as any).Path2D) (global as any).Path2D = class Path2D {};
+}
+
+const pdf = require('pdf-parse');
+
 interface ResumeParseResult {
   text: string;
   wordCount: number;
@@ -8,28 +17,33 @@ interface ResumeParseResult {
 
 /**
  * Extract text from PDF buffer
- * Note: PDF parsing is currently not supported. Please use DOCX or TXT format.
  */
 async function parsePDF(buffer: Buffer): Promise<ResumeParseResult> {
-  // PDF parsing temporarily disabled - use DOCX or TXT for best results
-  return {
-    text: `📄 PDF Parsing Not Available
-
-For the best AI analysis experience, please convert your resume to one of these formats:
-
-✅ DOCX (Microsoft Word) - RECOMMENDED
-✅ TXT (Plain Text) - Also works great!
-
-How to convert:
-1. Open your PDF in any PDF viewer
-2. Save As → Choose "Word Document (.docx)" or "Text File (.txt)"
-3. Upload the converted file here
-4. Get instant AI-powered resume tips!
-
-All AI features work perfectly with DOCX and TXT files.`,
-    wordCount: 0,
-    pageCount: 1,
-  };
+  let parser;
+  try {
+    parser = new pdf.PDFParse({ 
+      data: buffer,
+      disableWorker: true,
+      verbosity: 0
+    });
+    await parser.load();
+    
+    const textResult = await parser.getText();
+    const info = await parser.getInfo();
+    
+    return {
+      text: textResult.text,
+      wordCount: textResult.text.split(/\s+/).length,
+      pageCount: info.total,
+    };
+  } catch (error) {
+    console.error('Error parsing PDF:', error);
+    throw new Error('Failed to parse PDF file. Ensure it is not password protected.');
+  } finally {
+    if (parser) {
+      await parser.destroy();
+    }
+  }
 }
 
 /**
