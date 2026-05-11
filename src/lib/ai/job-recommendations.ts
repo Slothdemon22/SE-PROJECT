@@ -171,7 +171,7 @@ function getFallbackRecommendations(
     });
 
     // Department/Year bonus
-    if (profile.department && jobTags.some(tag => 
+    if (profile.department && job.tags.some(tag => 
       tag.toLowerCase().includes(profile.department!.toLowerCase())
     )) {
       score += 10;

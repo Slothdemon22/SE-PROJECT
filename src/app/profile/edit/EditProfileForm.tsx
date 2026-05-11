@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { Profile } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Save, Loader2, X, Plus } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, X, Plus, User as UserIcon } from 'lucide-react'
+import { FileUpload } from '@/components/FileUpload'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface EditProfileFormProps {
   profile: Profile
@@ -13,6 +15,7 @@ interface EditProfileFormProps {
 
 export function EditProfileForm({ profile }: EditProfileFormProps) {
   const router = useRouter()
+  const { refreshProfile } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -26,6 +29,7 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
   const [interests, setInterests] = useState<string[]>(profile.interests || [])
   const [newSkill, setNewSkill] = useState('')
   const [newInterest, setNewInterest] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || '')
 
   const handleAddSkill = () => {
     const trimmedSkill = newSkill.trim()
@@ -139,6 +143,7 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
           year,
           skills,
           interests,
+          avatarUrl,
         }),
       })
 
@@ -149,6 +154,8 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
       }
 
       setSuccess(true)
+      await refreshProfile()
+      router.refresh()
       setTimeout(() => {
         router.push('/profile')
       }, 1500)
@@ -190,6 +197,46 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="glass-card p-6 space-y-6">
+        {/* Profile Image */}
+        <div className="space-y-4">
+          <label className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+            Profile Image
+          </label>
+          <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl bg-slate-950/30 border border-white/5">
+            {avatarUrl ? (
+              <div className="relative group">
+                <img
+                  src={avatarUrl}
+                  alt="Avatar Preview"
+                  className="h-24 w-24 rounded-2xl object-cover border-2 border-[#1E3A8A]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl('')}
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="h-24 w-24 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-700">
+                <UserIcon className="w-8 h-8" />
+              </div>
+            )}
+            <div className="flex-1 w-full max-w-sm">
+              <FileUpload
+                category="AVATAR"
+                maxFiles={1}
+                onUploadComplete={(url) => setAvatarUrl(url)}
+                className="scale-90 origin-left"
+              />
+              <p className="text-xs mt-2 text-slate-500">
+                Recommended: Square image, max 5MB
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Full Name */}
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>

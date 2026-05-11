@@ -138,7 +138,7 @@ export default function NotificationCenter({ className }: NotificationCenterProp
   useEffect(() => {
     fetchNotifications();
 
-    if (!user) return;
+    if (!user || !pusherClient) return;
 
     // Subscribe to real-time notifications via Pusher
     const channel = pusherClient.subscribe(`user-${user.id}`);

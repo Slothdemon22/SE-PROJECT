@@ -72,12 +72,14 @@ Skills: ${profile.skills && profile.skills.length > 0 ? profile.skills.join(', '
 Interests: ${profile.interests && profile.interests.length > 0 ? profile.interests.join(', ') : 'No interests listed'}
 Profile Completeness: ${calculateProfileCompleteness(profile)}%
 
-Please analyze this profile and provide:
-1. An overall rating out of 10
-2. A brief summary (2-3 sentences)
-3. Three key strengths
-4. Three areas for improvement
-5. Detailed feedback on how to improve the profile
+Please perform a rigorous, honest, and critical critique of this profile. Be constructive but harsh. Do not give high scores easily — a score above 7 should represent a truly exceptional and complete profile.
+
+Provide:
+1. An overall rating out of 10 (be conservative and critical)
+2. A critical summary identifying the biggest weaknesses (2-3 sentences)
+3. Three genuine strengths (if any)
+4. Three critical areas for improvement that would actually make a difference for a recruiter
+5. Detailed, actionable feedback on how to make this profile stand out in a competitive market
 
 Format your response EXACTLY as JSON with this structure:
 {

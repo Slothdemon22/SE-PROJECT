@@ -48,7 +48,7 @@ Every user can act as both:
 | **Auth** | Supabase Auth (OAuth + Email) |
 | **Realtime** | Supabase Realtime for chat and notifications |
 | **Hosting** | Vercel (Frontend + API) |
-| **AI Logic** | Match score algorithm (skills-to-tags similarity model) |
+| **AI Logic** | Groq Llama 3 AI for matching and analysis |
 
 ---
 
@@ -205,9 +205,7 @@ No database changes or scripts needed - just add the email and they'll have inst
 
 ---
 
-## 🤖 AI-Powered Features
-
-CampusConnect leverages **Google Gemini AI** to provide intelligent assistance throughout the job application process:
+CampusConnect leverages **Groq AI (Llama 3)** to provide intelligent assistance throughout the job application process:
 
 ### 📄 Resume Analysis & Feedback
 - **Smart Resume Parsing**: Upload PDF, DOCX, or TXT resumes for AI analysis
@@ -434,7 +432,7 @@ CampusConnect implements comprehensive permission management:
 - PostgreSQL database
 - Stripe account (for payments)
 - 100ms account (for video calls)
-- Google Gemini API key (for AI features)
+- Groq API key (for AI features)
 
 ### Quick Setup
 1. **Clone the repository**
