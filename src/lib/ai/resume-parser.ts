@@ -8,6 +8,8 @@ if (typeof global !== 'undefined') {
 }
 
 const pdf = require('pdf-parse');
+// @ts-ignore
+const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
 
 interface ResumeParseResult {
   text: string;
@@ -21,6 +23,16 @@ interface ResumeParseResult {
 async function parsePDF(buffer: Buffer): Promise<ResumeParseResult> {
   let parser;
   try {
+    // @ts-ignore
+    if (pdfjs && pdfjs.GlobalWorkerOptions) {
+      pdfjs.GlobalWorkerOptions.workerSrc = false;
+    }
+
+    // @ts-ignore
+    if (typeof pdf.PDFParse.setWorker === 'function') {
+      pdf.PDFParse.setWorker(false);
+    }
+    
     parser = new pdf.PDFParse({ 
       data: buffer,
       disableWorker: true,
