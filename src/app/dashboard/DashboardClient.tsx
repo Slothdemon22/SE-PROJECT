@@ -1,11 +1,12 @@
 'use client'
 
 import { useActiveRole } from '@/hooks/useActiveRole'
-import { Search, Briefcase, Plus, Users, BookmarkIcon, TrendingUp, Clock, CheckCircle, XCircle, Sparkles, Eye, MousePointerClick, Percent, BarChart3, ArrowRight } from 'lucide-react'
+import { Search, Briefcase, Plus, Users, BookmarkIcon, TrendingUp, Clock, CheckCircle, XCircle, Sparkles, Eye, MousePointerClick, Percent, BarChart3, ArrowRight, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import AIJobRecommendations from '@/components/AIJobRecommendations'
+import gsap from 'gsap'
 
 interface AnalyticsData {
   seeker: {
@@ -65,6 +66,7 @@ export function DashboardClient({ profile, serverActiveRole }: DashboardClientPr
   const router = useRouter()
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [loadingAnalytics, setLoadingAnalytics] = useState(true)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Fetch analytics data
   useEffect(() => {
@@ -85,564 +87,213 @@ export function DashboardClient({ profile, serverActiveRole }: DashboardClientPr
     fetchAnalytics()
   }, [])
 
+  // GSAP Animations
+  useEffect(() => {
+    if (!loadingAnalytics && !isLoading && containerRef.current) {
+      const elements = containerRef.current.querySelectorAll('.bento-item')
+      gsap.fromTo(elements, 
+        { opacity: 0, y: 30, scale: 0.98 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "power3.out" }
+      )
+    }
+  }, [loadingAnalytics, isLoading, activeRole])
+
   if (isLoading || loadingAnalytics) {
     return (
-      <div className="space-y-8 animate-pulse" suppressHydrationWarning>
-        <div className="glass-card p-8 h-32" suppressHydrationWarning></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass-card p-6 h-24" suppressHydrationWarning></div>
-          <div className="glass-card p-6 h-24" suppressHydrationWarning></div>
-          <div className="glass-card p-6 h-24" suppressHydrationWarning></div>
-        </div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Banner */}
-      <div className="bg-[#151A24] border border-[var(--border)] p-8 rounded-2xl shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-          <Sparkles className="w-64 h-64 text-[#1A75E5]" />
-        </div>
-        <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
-          {profile.avatarUrl ? (
-            <img
-              src={profile.avatarUrl}
-              alt={profile.fullName || 'Profile'}
-              className="h-24 w-24 rounded-full object-cover border-4 border-[var(--border)] shadow-lg"
-            />
-          ) : (
-            <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#1A75E5] to-[#0B0E14] border-4 border-[var(--border)] shadow-lg flex items-center justify-center text-3xl font-bold text-white">
-              {profile.fullName?.charAt(0) || 'U'}
-            </div>
-          )}
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-4xl font-bold mb-3 text-white tracking-tight">
-              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-[#1A75E5]">{profile.fullName}</span>
-            </h2>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-base">
-              <div className="flex items-center gap-2 bg-[#1A75E5]/10 border border-[#1A75E5]/20 px-4 py-1.5 rounded-full text-blue-400 font-medium">
-                {activeRole === 'SEEKER' ? (
-                  <>
-                    <Search className="h-4 w-4" />
-                    <span>Finding Work Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <Briefcase className="h-4 w-4" />
-                    <span>Posting Jobs Mode</span>
-                  </>
-                )}
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 rounded-3xl" ref={containerRef}>
+      
+      {/* Dynamic Header */}
+      <div className="bento-item flex flex-col md:flex-row items-center justify-between bg-slate-900/50 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-2xl mb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="flex items-center gap-6 relative z-10">
+          <div className="relative">
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt="Profile" className="w-20 h-20 rounded-2xl object-cover shadow-lg border border-white/10" />
+            ) : (
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center text-3xl font-black text-white shadow-lg border border-white/20">
+                {profile.fullName?.charAt(0) || 'U'}
               </div>
-              <span className="text-[var(--foreground-muted)]">{profile.department || 'No department set'}</span>
+            )}
+            <div className="absolute -bottom-2 -right-2 bg-slate-900 p-1.5 rounded-xl border border-white/10">
+              {activeRole === 'SEEKER' ? <Search className="w-4 h-4 text-sky-400" /> : <Briefcase className="w-4 h-4 text-blue-400" />}
             </div>
           </div>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-white mb-1">
+              Welcome back, {profile.fullName?.split(' ')[0]}
+            </h1>
+            <p className="text-slate-400 font-medium">
+              {activeRole === 'SEEKER' ? 'Ready to find your next great role?' : 'Managing your open opportunities.'}
+            </p>
+          </div>
+        </div>
+        
+        <div className="mt-6 md:mt-0 relative z-10">
+          <Link href="/profile" className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-semibold transition-all flex items-center gap-2">
+            <LayoutGrid className="w-4 h-4" /> Edit Profile
+          </Link>
         </div>
       </div>
 
-      {/* Seeker Mode Dashboard */}
       {activeRole === 'SEEKER' && analytics && (
-        <>
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-[#151A24] border border-[var(--border)] p-6 rounded-2xl shadow-lg hover:border-[#1A75E5]/50 hover:shadow-[#1A75E5]/10 transition-all group">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-sm font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
-                  Applications Sent
-                </p>
-                <div className="p-2 rounded-lg bg-[#1D2B44] text-blue-400 group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          {/* Main KPI Bento Box */}
+          <div className="bento-item md:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-3xl">
+            <div className="bg-slate-950/50 p-6 rounded-2xl border border-blue-500/20 hover:border-blue-500/50 transition-colors group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-slate-400">Applications</p>
+                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl group-hover:scale-110 transition-transform"><TrendingUp className="w-5 h-5"/></div>
               </div>
-              <p className="text-4xl font-black text-white">
-                {analytics.seeker.applicationsSent}
-              </p>
+              <p className="text-4xl font-black text-white">{analytics.seeker.applicationsSent}</p>
+            </div>
+            
+            <div className="bg-slate-950/50 p-6 rounded-2xl border border-sky-500/20 hover:border-sky-500/50 transition-colors group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-slate-400">Saved Jobs</p>
+                <div className="p-2 bg-sky-500/10 text-sky-400 rounded-xl group-hover:scale-110 transition-transform"><BookmarkIcon className="w-5 h-5"/></div>
+              </div>
+              <p className="text-4xl font-black text-white">{analytics.seeker.savedJobs}</p>
             </div>
 
-            <div className="bg-[#151A24] border border-[var(--border)] p-6 rounded-2xl shadow-lg hover:border-[#1A75E5]/50 hover:shadow-[#1A75E5]/10 transition-all group">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-sm font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
-                  Saved Jobs
-                </p>
-                <div className="p-2 rounded-lg bg-[#1D2B44] text-purple-400 group-hover:scale-110 transition-transform">
-                  <BookmarkIcon className="w-5 h-5" />
-                </div>
+            <div className="bg-slate-950/50 p-6 rounded-2xl border border-emerald-500/20 hover:border-emerald-500/50 transition-colors group">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-slate-400">Profile Views</p>
+                <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl group-hover:scale-110 transition-transform"><Eye className="w-5 h-5"/></div>
               </div>
-              <p className="text-4xl font-black text-white">
-                {analytics.seeker.savedJobs}
-              </p>
-            </div>
-
-            <div className="bg-[#151A24] border border-[var(--border)] p-6 rounded-2xl shadow-lg hover:border-[#1A75E5]/50 hover:shadow-[#1A75E5]/10 transition-all group">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-sm font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
-                  Profile Views
-                </p>
-                <div className="p-2 rounded-lg bg-[#1D2B44] text-green-400 group-hover:scale-110 transition-transform">
-                  <Eye className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-4xl font-black text-white">
-                {analytics.seeker.profileViews}
-              </p>
+              <p className="text-4xl font-black text-white">{analytics.seeker.profileViews}</p>
             </div>
           </div>
 
-          {/* Application Status Breakdown */}
-          {analytics.seeker.applicationsSent > 0 && (
-            <div className="bg-[#151A24] border border-[var(--border)] p-8 rounded-2xl shadow-lg">
-              <h3 className="text-xl font-bold mb-6 text-white tracking-tight">
-                Application Status
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-6 rounded-xl border border-yellow-900/30 bg-gradient-to-b from-yellow-500/10 to-transparent">
-                  <Clock className="w-8 h-8 text-yellow-500 mb-4" />
-                  <p className="text-3xl font-bold text-white mb-1">
-                    {analytics.seeker.applicationsByStatus.pending}
-                  </p>
-                  <p className="text-sm text-yellow-200/70 font-medium">Pending</p>
-                </div>
-                <div className="p-6 rounded-xl border border-blue-900/30 bg-gradient-to-b from-blue-500/10 to-transparent">
-                  <TrendingUp className="w-8 h-8 text-blue-500 mb-4" />
-                  <p className="text-3xl font-bold text-white mb-1">
-                    {analytics.seeker.applicationsByStatus.reviewing}
-                  </p>
-                  <p className="text-sm text-blue-200/70 font-medium">Reviewing</p>
-                </div>
-                <div className="p-6 rounded-xl border border-green-900/30 bg-gradient-to-b from-green-500/10 to-transparent">
-                  <CheckCircle className="w-8 h-8 text-green-500 mb-4" />
-                  <p className="text-3xl font-bold text-white mb-1">
-                    {analytics.seeker.applicationsByStatus.accepted}
-                  </p>
-                  <p className="text-sm text-green-200/70 font-medium">Accepted</p>
-                </div>
-                <div className="p-6 rounded-xl border border-red-900/30 bg-gradient-to-b from-red-500/10 to-transparent">
-                  <XCircle className="w-8 h-8 text-red-500 mb-4" />
-                  <p className="text-3xl font-bold text-white mb-1">
-                    {analytics.seeker.applicationsByStatus.rejected}
-                  </p>
-                  <p className="text-sm text-red-200/70 font-medium">Rejected</p>
-                </div>
-              </div>
+          {/* Call to Action Box */}
+          <div className="bento-item md:col-span-4 bg-gradient-to-br from-blue-700 to-blue-900 rounded-3xl p-8 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-blue-500/20 border border-blue-500/30">
+            <div className="relative z-10">
+              <Sparkles className="w-8 h-8 text-white/80 mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">Find Opportunities</h3>
+              <p className="text-blue-100/80 mb-6">Explore the latest positions tailored precisely for your skills.</p>
             </div>
-          )}
-
-          {/* Action Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <Link href="/jobs" className="block group">
-              <div className="bg-[#151A24] border border-[var(--border)] p-8 rounded-2xl shadow-lg hover:border-[var(--accent)] hover:shadow-xl transition-all h-full">
-                <div className="flex items-start gap-5">
-                  <div className="p-4 rounded-xl bg-[#1D2B44] group-hover:bg-[#1A75E5] transition-colors">
-                    <Search className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-xl mb-2 text-white group-hover:text-[var(--accent)] transition-colors">
-                      Browse Opportunities
-                    </h3>
-                    <p className="text-sm text-[var(--foreground-muted)] leading-relaxed mb-4">
-                      Find projects, internships, and collaborations that match your skills. Apply with one click.
-                    </p>
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
-                      Explore Jobs <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/bookmarks" className="block group">
-              <div className="bg-[#151A24] border border-[var(--border)] p-8 rounded-2xl shadow-lg hover:border-[#8B5CF6] hover:shadow-xl transition-all h-full">
-                <div className="flex items-start gap-5">
-                  <div className="p-4 rounded-xl bg-[#1D2B44] group-hover:bg-[#8B5CF6] transition-colors">
-                    <BookmarkIcon className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-xl mb-2 text-white group-hover:text-[#8B5CF6] transition-colors">
-                      Saved Jobs
-                    </h3>
-                    <p className="text-sm text-[var(--foreground-muted)] leading-relaxed mb-4">
-                      Review and apply to jobs you've bookmarked. Don't lose track of your favorites.
-                    </p>
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#8B5CF6]">
-                      View Saved <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <Link href="/jobs" className="relative z-10 w-full py-4 bg-white text-blue-950 font-black rounded-2xl text-center hover:scale-[1.02] transition-transform">
+              Explore Jobs
             </Link>
           </div>
-        </>
+
+          {/* Application Status Breakdowns */}
+          <div className="bento-item md:col-span-12 bg-slate-900/40 backdrop-blur-xl border border-white/5 p-8 rounded-3xl">
+            <h3 className="text-xl font-bold text-white mb-6">Application Status Pipeline</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: 'Pending', count: analytics.seeker.applicationsByStatus.pending, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+                { label: 'Reviewing', count: analytics.seeker.applicationsByStatus.reviewing, icon: Search, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+                { label: 'Accepted', count: analytics.seeker.applicationsByStatus.accepted, icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+                { label: 'Rejected', count: analytics.seeker.applicationsByStatus.rejected, icon: XCircle, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' }
+              ].map((stat, i) => (
+                <div key={i} className={`p-5 rounded-2xl ${stat.bg} ${stat.border} border flex items-center justify-between`}>
+                  <div>
+                    <p className="text-3xl font-black text-white">{stat.count}</p>
+                    <p className={`text-sm font-semibold mt-1 ${stat.color}`}>{stat.label}</p>
+                  </div>
+                  <stat.icon className={`w-8 h-8 opacity-50 ${stat.color}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bento-item md:col-span-12">
+            <AIJobRecommendations />
+          </div>
+
+        </div>
       )}
 
-      {/* Finder Mode Dashboard */}
       {activeRole === 'FINDER' && analytics && (
-        <>
-          {/* Overview Stats */}
-          <div className="glass-card p-8">
-            <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>
-              Overview
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Active Jobs</p>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          {/* Main KPI Bento Box */}
+          <div className="bento-item md:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-3xl">
+            {[
+              { label: 'Active Jobs', count: analytics.finder.activeJobs, icon: Briefcase, color: 'text-emerald-400' },
+              { label: 'Pending', count: analytics.finder.pendingJobs, icon: Clock, color: 'text-amber-400' },
+              { label: 'Applications', count: analytics.finder.applicationsReceived, icon: Users, color: 'text-blue-400' },
+              { label: 'Total Views', count: analytics.finder.totalViews, icon: Eye, color: 'text-sky-400' }
+            ].map((stat, i) => (
+              <div key={i} className="bg-slate-950/50 p-5 rounded-2xl border border-white/5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{stat.label}</span>
                 </div>
-                <p className="text-3xl font-bold text-green-600">{analytics.finder.activeJobs}</p>
+                <p className="text-3xl font-black text-white mt-auto">{stat.count}</p>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-yellow-600" />
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Pending</p>
-                </div>
-                <p className="text-3xl font-bold text-yellow-600">{analytics.finder.pendingJobs}</p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Applications</p>
-                </div>
-                <p className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>
-                  {analytics.finder.applicationsReceived}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Eye className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Total Views</p>
-                </div>
-                <p className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>
-                  {analytics.finder.totalViews}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Engagement Metrics */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-blue-100">
-                  <BookmarkIcon className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Total Bookmarks</p>
-                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-                    {analytics.finder.totalBookmarks}
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
-                Users who saved your jobs
-              </p>
+          {/* Action Call */}
+          <div className="bento-item md:col-span-4 bg-gradient-to-br from-blue-700 via-blue-800 to-sky-700 rounded-3xl p-8 relative overflow-hidden flex flex-col justify-between shadow-2xl border border-blue-500/30">
+            <div className="relative z-10">
+              <Plus className="w-10 h-10 text-white bg-white/20 p-2 rounded-xl backdrop-blur-md mb-6" />
+              <h3 className="text-2xl font-bold text-white mb-2">Create Listing</h3>
+              <p className="text-blue-100/80 mb-6 text-sm">Post a new opportunity to reach thousands of highly qualified candidates instantly.</p>
             </div>
-
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-purple-100">
-                  <Percent className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Avg Application Rate</p>
-                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-                    {analytics.finder.averageApplicationRate}%
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
-                Applications per view
-              </p>
-            </div>
-
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-green-100">
-                  <BarChart3 className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>Engagement Score</p>
-                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-                    {analytics.finder.activeJobs > 0
-                      ? Math.round((analytics.finder.applicationsReceived / analytics.finder.activeJobs) * 10) / 10
-                      : 0}
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
-                Average apps per job
-              </p>
-            </div>
+            <Link href="/jobs/create" className="relative z-10 w-full py-4 bg-white text-blue-950 font-black rounded-2xl text-center hover:scale-[1.02] transition-transform">
+              Post Job Now
+            </Link>
           </div>
 
-          {/* Action Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="glass-card p-6 hover:shadow-lg transition-all">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg" style={{ background: 'rgba(37, 99, 235, 0.1)' }}>
-                  <Plus className="h-6 w-6" style={{ color: 'var(--accent)' }} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--foreground)' }}>
-                    Post a New Job
-                  </h3>
-                  <p className="text-sm mb-4" style={{ color: 'var(--foreground-muted)' }}>
-                    Create a new opportunity and find talented collaborators
-                  </p>
-                  <Link href="/jobs/create" className="btn-gradient inline-block px-6 py-2 text-sm">
-                    Create Job
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card p-6 hover:shadow-lg transition-all">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg" style={{ background: 'rgba(37, 99, 235, 0.1)' }}>
-                  <Users className="h-6 w-6" style={{ color: 'var(--accent)' }} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--foreground)' }}>
-                    Manage Applications
-                  </h3>
-                  <p className="text-sm mb-4" style={{ color: 'var(--foreground-muted)' }}>
-                    Review and respond to applications from candidates
-                  </p>
-                  <Link href="/applications" className="btn-gradient inline-block px-6 py-2 text-sm">
-                    View Applications
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Detailed Job Analytics */}
-          <div className="glass-card p-8">
-            <div className="flex items-center justify-between mb-6">
+          {/* Job Performance List */}
+          <div className="bento-item md:col-span-12 bg-slate-900/40 backdrop-blur-xl border border-white/5 p-8 rounded-3xl">
+            <div className="flex justify-between items-end mb-8">
               <div>
-                <h3 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-                  Job Performance Analytics
-                </h3>
-                <p className="text-sm mt-1" style={{ color: 'var(--foreground-muted)' }}>
-                  Detailed metrics for each job posting
-                </p>
+                <h3 className="text-2xl font-bold text-white">Job Performance</h3>
+                <p className="text-slate-400">Track how your listings are converting.</p>
               </div>
-              <Link href="/jobs/create" className="btn-gradient px-6 py-3 text-sm font-semibold">
-                + Post New Job
-              </Link>
             </div>
-
-            {analytics.finder.recentJobs.length > 0 ? (
-              <div className="space-y-4">
-                {analytics.finder.recentJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="glass-card p-6 hover:shadow-lg transition-all"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                      {/* Job Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Link
-                            href={`/jobs/${job.id}`}
-                            className="font-bold text-lg hover:text-[#1E3A8A] transition-colors"
-                            style={{ color: 'var(--foreground)' }}
-                          >
-                            {job.title}
-                          </Link>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${job.status === 'POSTED'
-                              ? 'bg-green-100 text-green-700'
-                              : job.status === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-gray-100 text-gray-700'
-                              }`}
-                          >
-                            {job.status}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
-                          <span className="px-3 py-1 rounded-full" style={{ background: 'rgba(30, 58, 138, 0.1)', color: '#1E3A8A' }}>
-                            {job.jobType}
-                          </span>
-                          {job.company && (
-                            <span style={{ color: 'var(--foreground-muted)' }}>
-                              {job.company}
-                            </span>
-                          )}
-                          {job.location && (
-                            <span style={{ color: 'var(--foreground-muted)' }}>
-                              📍 {job.location}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Analytics Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Eye className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} />
-                              <span className="text-xs" style={{ color: 'var(--foreground-muted)' }}>Views</span>
-                            </div>
-                            <p className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
-                              {job.views}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} />
-                              <span className="text-xs" style={{ color: 'var(--foreground-muted)' }}>Applications</span>
-                            </div>
-                            <p className="text-lg font-bold text-blue-600">
-                              {job._count.applications}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <BookmarkIcon className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} />
-                              <span className="text-xs" style={{ color: 'var(--foreground-muted)' }}>Saved</span>
-                            </div>
-                            <p className="text-lg font-bold text-purple-600">
-                              {job._count.bookmarks}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <MousePointerClick className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} />
-                              <span className="text-xs" style={{ color: 'var(--foreground-muted)' }}>App Rate</span>
-                            </div>
-                            <p className="text-lg font-bold text-green-600">
-                              {job.applicationRate}%
-                            </p>
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} />
-                              <span className="text-xs" style={{ color: 'var(--foreground-muted)' }}>Save Rate</span>
-                            </div>
-                            <p className="text-lg font-bold text-orange-600">
-                              {job.bookmarkRate}%
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col gap-2">
-                        <Link
-                          href={`/jobs/${job.id}/applications`}
-                          className="btn-gradient px-4 py-2 text-sm text-center whitespace-nowrap"
-                        >
-                          View Applications
-                        </Link>
-                        <Link
-                          href={`/jobs/${job.id}/edit`}
-                          className="glass-card px-4 py-2 text-sm text-center whitespace-nowrap hover:scale-105 transition-transform"
-                          style={{ color: 'var(--foreground)' }}
-                        >
-                          Edit Job
-                        </Link>
-                      </div>
+            
+            <div className="space-y-4">
+              {analytics.finder.recentJobs.length > 0 ? analytics.finder.recentJobs.map(job => (
+                <div key={job.id} className="bg-slate-950/50 border border-white/5 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-blue-500/30 transition-colors">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h4 className="font-bold text-lg text-white">{job.title}</h4>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${job.status === 'POSTED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                        {job.status}
+                      </span>
+                    </div>
+                    <div className="flex gap-4 text-sm font-medium text-slate-500">
+                      <span>{job.jobType}</span>
+                      <span>•</span>
+                      <span>{job.views} Views</span>
+                      <span>•</span>
+                      <span className="text-blue-400">{job._count.applications} Applications</span>
                     </div>
                   </div>
-                ))}
-                <Link
-                  href="/my-jobs"
-                  className="block text-center text-sm font-medium pt-4 hover:text-[#1E3A8A] transition-colors"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  View All Your Jobs →
-                </Link>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Briefcase
-                  className="h-16 w-16 mx-auto mb-4"
-                  style={{ color: 'var(--foreground-muted)', opacity: 0.5 }}
-                />
-                <p className="text-lg mb-2 font-semibold" style={{ color: 'var(--foreground)' }}>
-                  No jobs posted yet
-                </p>
-                <p className="text-sm mb-6" style={{ color: 'var(--foreground-muted)' }}>
-                  Create your first job posting to find talented collaborators
-                </p>
-                <Link href="/jobs/create" className="btn-gradient px-6 py-3 text-sm font-semibold inline-block">
-                  Post Your First Job
-                </Link>
-              </div>
-            )}</div>
-        </>
-      )}
-
-      <div className="bg-[#151A24] border border-[var(--border)] p-8 rounded-2xl shadow-lg relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        <div className="relative z-10">
-          <h3 className="text-2xl font-bold mb-6 text-white tracking-tight">
-            Your Profile
-          </h3>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h4 className="font-semibold text-sm uppercase tracking-wider text-[var(--foreground-muted)] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Skills
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.length > 0 ? (
-                  profile.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-4 py-1.5 rounded-full text-sm font-medium border border-[#1E3A8A]/30 bg-[#1E3A8A]/10 text-white shadow-sm hover:bg-[#1E3A8A]/20 transition-colors"
-                    >
-                      {skill}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-sm text-[var(--foreground-muted)] italic">
-                    No skills added yet
-                  </p>
-                )}
-              </div>
+                  
+                  <div className="flex gap-3">
+                    <Link href={`/jobs/${job.id}/applications`} className="px-5 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-bold hover:bg-blue-500/20 transition-colors text-sm">
+                      Manage
+                    </Link>
+                    <Link href={`/jobs/${job.id}/edit`} className="px-5 py-2.5 bg-white/5 text-white border border-white/10 rounded-xl font-bold hover:bg-white/10 transition-colors text-sm">
+                      Edit
+                    </Link>
+                  </div>
+                </div>
+              )) : (
+                <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl">
+                  <Briefcase className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-400 font-medium">No jobs posted yet</p>
+                </div>
+              )}
             </div>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-sm uppercase tracking-wider text-[var(--foreground-muted)] flex items-center gap-2">
-                <BookmarkIcon className="w-4 h-4 text-[var(--accent)]" /> Interests
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.length > 0 ? (
-                  profile.interests.map((interest) => (
-                    <span
-                      key={interest}
-                      className="px-4 py-1.5 rounded-full text-sm font-medium border border-[var(--border)] bg-[#0B0E14] text-white shadow-sm hover:border-[var(--accent)] transition-colors"
-                    >
-                      {interest}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-sm text-[var(--foreground-muted)] italic">
-                    No interests added yet
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-[var(--border)] flex justify-end">
-            <Link href="/profile" className="text-sm font-medium text-[var(--accent)] hover:text-white transition-colors flex items-center gap-2 group/btn">
-              Edit Profile <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-            </Link>
           </div>
         </div>
-      </div>
-
-      {/* AI Job Recommendations - Only for Seekers */}
-      {activeRole === 'SEEKER' && (
-        <AIJobRecommendations />
       )}
     </div>
   )
 }
-

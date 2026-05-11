@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Job } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import gsap from 'gsap'
 import {
   FileText,
   Edit,
@@ -29,6 +30,17 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [publishingId, setPublishingId] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const elements = containerRef.current.querySelectorAll('.draft-card')
+      gsap.fromTo(elements, 
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out", overwrite: "auto" }
+      )
+    }
+  }, [drafts])
 
   const handleDelete = async (jobId: string) => {
     if (!confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
@@ -83,26 +95,20 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-100" ref={containerRef}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+        <div className="text-center md:text-left">
           <h1
-            className="text-4xl font-bold mb-2"
-            style={{
-              background: 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
+            className="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent"
           >
             Draft Jobs
           </h1>
-          <p className="text-lg" style={{ color: 'var(--foreground-muted)' }}>
+          <p className="text-lg text-slate-400">
             Your unpublished job postings ({drafts.length})
           </p>
         </div>
-        <Button onClick={() => router.push('/jobs/create')} className="btn-gradient">
+        <Button onClick={() => router.push('/jobs/create')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-8 rounded-2xl shadow-lg shadow-blue-500/20 text-lg">
           <Plus className="w-5 h-5 mr-2" />
           Create New Job
         </Button>
@@ -110,15 +116,17 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
 
       {/* Drafts List */}
       {drafts.length === 0 ? (
-        <div className="glass-card p-12 text-center">
-          <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--foreground-muted)' }} />
-          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
+        <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl p-16 text-center shadow-lg w-full max-w-2xl mx-auto">
+          <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FileText className="w-10 h-10 text-slate-500" />
+          </div>
+          <h3 className="text-2xl font-bold mb-3 text-white tracking-tight">
             No drafts yet
           </h3>
-          <p className="mb-6" style={{ color: 'var(--foreground-muted)' }}>
+          <p className="mb-8 text-slate-400 text-lg">
             Start creating a job posting and save it as a draft
           </p>
-          <Button onClick={() => router.push('/jobs/create')} className="btn-gradient">
+          <Button onClick={() => router.push('/jobs/create')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-8 rounded-xl shadow-lg shadow-blue-500/20">
             <Plus className="w-5 h-5 mr-2" />
             Create Your First Draft
           </Button>
@@ -126,70 +134,62 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
       ) : (
         <div className="grid gap-6">
           {drafts.map((draft) => (
-            <div key={draft.id} className="glass-card p-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div key={draft.id} className="draft-card bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-3xl hover:border-blue-500/30 transition-all duration-300">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 {/* Left: Draft Info */}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <h3 className="text-2xl font-bold text-white hover:text-blue-400 transition-colors leading-tight">
                       {draft.title}
                     </h3>
-                    <Badge className="bg-gray-100 text-gray-800 border-gray-300">
+                    <Badge className="bg-slate-800 text-slate-300 border-white/10 px-3 py-1">
                       Draft
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="border-white/10 bg-slate-950 text-slate-300 px-3 py-1">
                       {JOB_TYPE_LABELS[draft.type]}
                     </Badge>
                   </div>
 
-                  <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--foreground-muted)' }}>
+                  <p className="text-slate-400 mb-4 line-clamp-2 leading-relaxed">
                     {draft.description}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--foreground-muted)' }}>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
+                  <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-slate-600" />
                       Last edited {new Date(draft.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex md:flex-col gap-2 w-full md:w-auto">
+                <div className="flex flex-wrap md:flex-col gap-3 w-full md:w-auto min-w-[160px]">
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={() => router.push(`/jobs/${draft.id}/edit`)}
-                    className="flex-1 md:flex-initial"
+                    className="flex-1 bg-slate-950/50 border-white/10 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl py-5"
                   >
-                    <Edit className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:inline">Edit</span>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
                   </Button>
 
                   <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => handlePublish(draft.id)}
                     disabled={publishingId === draft.id}
-                    className="flex-1 md:flex-initial text-blue-600 border-blue-300 hover:bg-blue-50"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-5 shadow-lg shadow-blue-500/20"
                   >
-                    <Send className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:inline">
-                      {publishingId === draft.id ? 'Publishing...' : 'Publish'}
-                    </span>
+                    <Send className="w-4 h-4 mr-2" />
+                    {publishingId === draft.id ? 'Publishing...' : 'Publish'}
                   </Button>
 
                   <Button
-                    variant="destructive"
-                    size="sm"
+                    variant="outline"
                     onClick={() => handleDelete(draft.id)}
                     disabled={deletingId === draft.id}
-                    className="flex-1 md:flex-initial"
+                    className="flex-1 bg-rose-500/5 border-rose-500/20 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 rounded-xl py-5"
                   >
-                    <Trash2 className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:inline">
-                      {deletingId === draft.id ? 'Deleting...' : 'Delete'}
-                    </span>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {deletingId === draft.id ? 'Deleting...' : 'Delete'}
                   </Button>
                 </div>
               </div>
@@ -200,4 +200,3 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
     </div>
   )
 }
-

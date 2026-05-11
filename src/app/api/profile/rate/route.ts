@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import Groq from 'groq-sdk';
 
 interface ProfileRatingResponse {
   rating: number;
@@ -30,12 +27,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // Check if API key is configured
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.API_KEY) {
       return NextResponse.json(
-        { error: 'Gemini API key is not configured' },
+        { error: 'API_KEY is not configured for Groq' },
         { status: 500 }
       );
     }
+
+    const groq = new Groq({ apiKey: process.env.API_KEY });
 
     // Fetch user profile
     const profile = await prisma.profile.findUnique({
@@ -90,12 +89,14 @@ Format your response EXACTLY as JSON with this structure:
 }
 `;
 
-    // Call Gemini API
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    // Call Groq API
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: profileContext }],
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
+    });
     
-    const result = await model.generateContent(profileContext);
-    const response = await result.response;
-    const text = response.text();
+    const text = chatCompletion.choices[0].message.content || '{}';
 
     // Parse the AI response
     let aiResponse: ProfileRatingResponse;

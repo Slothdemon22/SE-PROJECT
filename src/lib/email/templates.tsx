@@ -6,6 +6,16 @@ interface WelcomeEmailProps {
   userName: string
 }
 
+interface SignupConfirmationEmailProps {
+  userName: string
+  confirmationLink: string
+}
+
+interface PasswordResetEmailProps {
+  userName: string
+  resetLink: string
+}
+
 interface JobApprovedEmailProps {
   userName: string
   jobTitle: string
@@ -682,7 +692,6 @@ export function JobFilledEmail({
             <a href={`${baseUrl}/jobs`} style={emailStyles.button}>Browse More Jobs</a>
           </div>
           
-          <p>Your next opportunity is waiting!</p>
           <p>Best regards,<br/>The {EMAIL_CONFIG.appName} Team</p>
         </div>
         <div style={emailStyles.footer}>
@@ -693,3 +702,62 @@ export function JobFilledEmail({
   )
 }
 
+// Signup Confirmation Email Component
+export function SignupConfirmationEmail({ userName, confirmationLink }: SignupConfirmationEmailProps) {
+  return (
+    <div style={emailStyles.body}>
+      <div style={emailStyles.container}>
+        <div style={emailStyles.header}>
+          <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '600' }}>
+            🎓 {EMAIL_CONFIG.appName}
+          </h1>
+        </div>
+        <div style={emailStyles.content}>
+          <h2>Verify your email address</h2>
+          <p>Hi {userName},</p>
+          <p>Welcome to {EMAIL_CONFIG.appName}! Please verify your email address to get started.</p>
+          
+          <div style={{ textAlign: 'center' }}>
+            <a href={confirmationLink} style={emailStyles.button}>Verify Email</a>
+          </div>
+          
+          <p>If you didn't create an account, you can safely ignore this email.</p>
+          <p>Best regards,<br/>The {EMAIL_CONFIG.appName} Team</p>
+        </div>
+        <div style={emailStyles.footer}>
+          <p>© 2025 {EMAIL_CONFIG.appName}. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Password Reset Email Component
+export function PasswordResetEmail({ userName, resetLink }: PasswordResetEmailProps) {
+  return (
+    <div style={emailStyles.body}>
+      <div style={emailStyles.container}>
+        <div style={emailStyles.header}>
+          <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '600' }}>
+            🎓 {EMAIL_CONFIG.appName}
+          </h1>
+        </div>
+        <div style={emailStyles.content}>
+          <h2>Reset your password</h2>
+          <p>Hi {userName},</p>
+          <p>Someone recently requested a password change for your {EMAIL_CONFIG.appName} account. If this was you, you can set a new password here:</p>
+          
+          <div style={{ textAlign: 'center' }}>
+            <a href={resetLink} style={emailStyles.button}>Reset Password</a>
+          </div>
+          
+          <p>If you don't want to change your password or didn't request this, just ignore and delete this message.</p>
+          <p>Best regards,<br/>The {EMAIL_CONFIG.appName} Team</p>
+        </div>
+        <div style={emailStyles.footer}>
+          <p>© 2025 {EMAIL_CONFIG.appName}. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
