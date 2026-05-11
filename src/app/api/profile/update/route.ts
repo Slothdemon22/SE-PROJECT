@@ -9,6 +9,7 @@ interface UpdateProfileBody {
   interests?: string[]
   department?: string
   year?: string
+  avatarUrl?: string
 }
 
 /**
@@ -33,7 +34,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     }
 
     const body: UpdateProfileBody = await request.json()
-    const { fullName, bio, skills, interests, department, year } = body
+    const { fullName, bio, skills, interests, department, year, avatarUrl } = body
 
     // Validate inputs
     if (fullName !== undefined && (!fullName.trim() || fullName.trim().length < 2)) {
@@ -56,6 +57,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     if (interests !== undefined) updateData.interests = interests.filter(i => i.trim())
     if (department !== undefined) updateData.department = department.trim() || null
     if (year !== undefined) updateData.year = year.trim() || null
+    if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl || null
 
     // Update profile
     const updatedProfile = await prisma.profile.update({

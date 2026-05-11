@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 
 export function Navbar() {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const pathname = usePathname()
   const [activeRole, setActiveRole] = useState<'SEEKER' | 'FINDER' | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -123,10 +123,10 @@ export function Navbar() {
           {/* Logo */}
           <div className="flex items-center gap-12">
             <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:scale-110 transition-transform">
+                <img src="/logo.png" alt="CampusConnect Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="text-xl font-bold bg-linear-to-r from-[#1E3A8A] to-blue-600 bg-clip-text text-transparent">
+              <span className="text-xl font-black bg-linear-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
                 CampusConnect
               </span>
             </Link>
@@ -141,9 +141,6 @@ export function Navbar() {
                   </NavLink>
                   <NavLink href="/jobs" icon={Search}>
                     Browse
-                  </NavLink>
-                  <NavLink href="/changelog" icon={History}>
-                    Changelog
                   </NavLink>
                 </div>
 
@@ -413,9 +410,17 @@ export function Navbar() {
                         e.currentTarget.style.setProperty('background-color', 'transparent', 'important')
                       }}
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
-                        {user.email?.[0].toUpperCase()}
-                      </div>
+                      {profile?.avatarUrl ? (
+                        <img 
+                          src={profile.avatarUrl} 
+                          alt="Avatar" 
+                          className="w-8 h-8 rounded-full object-cover border border-[#1E3A8A]" 
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                          {user.email?.[0].toUpperCase()}
+                        </div>
+                      )}
                       <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--foreground-muted)' }} />
                     </button>
 
@@ -554,9 +559,17 @@ export function Navbar() {
             {/* User Info Section */}
             <div className="px-4 py-3 mb-2 rounded-xl" style={{ background: 'rgba(30, 58, 138, 0.05)' }}>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center text-white font-bold">
-                  {user.email?.[0].toUpperCase()}
-                </div>
+                {profile?.avatarUrl ? (
+                  <img 
+                    src={profile.avatarUrl} 
+                    alt="Avatar" 
+                    className="w-10 h-10 rounded-full object-cover border border-[#1E3A8A]" 
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center text-white font-bold">
+                    {user.email?.[0].toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1">
                   <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                     {user.email?.split('@')[0]}
@@ -601,13 +614,6 @@ export function Navbar() {
                 Browse Jobs
               </NavLink>
 
-              <NavLink
-                href="/changelog"
-                icon={History}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Changelog
-              </NavLink>
 
               {activeRole === 'FINDER' && (
                 <>
