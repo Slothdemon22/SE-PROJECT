@@ -31,7 +31,7 @@ export async function refineJobWithAI(request: JobRefineRequest): Promise<JobRef
 
     const groq = new Groq({ apiKey });
 
-    const prompt = `You are an expert HR professional and job posting specialist. Refine this job posting to be professional, clear, and attractive to candidates.
+    const prompt = `You are a world-class Employer Branding specialist and Senior Technical Recruiter. Your objective is to transform a basic job requirement into a high-conversion, professional, and elite-level job posting that attracts top-tier student talent.
 
 ROLE: ${request.role}
 ${request.currentDescription ? `CURRENT DESCRIPTION: ${request.currentDescription}` : ''}
@@ -40,40 +40,35 @@ ${request.type ? `JOB TYPE: ${request.type}` : ''}
 ${request.duration ? `DURATION: ${request.duration}` : ''}
 ${request.compensation ? `COMPENSATION: ${request.compensation}` : ''}
 
-Generate a professional job posting with:
-1. Polished job title (if needed, improve the provided role)
-2. Compelling job description (3-4 paragraphs):
-   - What the role involves
-   - What makes it exciting
-   - What the candidate will learn/achieve
-   - Team/project context
-3. Clear, specific requirements (5-8 bullet points):
-   - Technical skills
-   - Soft skills
-   - Experience level
-   - Other qualifications
-4. Relevant tags (5-8 keywords for searchability)
-5. Suggested duration (e.g., "3-6 months", "1 semester")
-6. Suggested team size (e.g., "2-3 people", "Solo", "4-5 people")
-7. Suggested compensation if not provided
+TRANSFORMATION PROTOCOL:
+1. **Executive Title**: Craft a polished, industry-standard job title that sounds prestigious.
+2. **Value Prop Description**: Write a compelling narrative (3-4 paragraphs) that covers:
+   - Mission: Why this project matters.
+   - Impact: What the candidate will actually build and own.
+   - Growth: What elite skills they will master.
+   - Culture: The collaborative environment they will join.
+3. **Surgical Requirements**: List 5-8 bullet points of high-impact requirements:
+   - Technical mastery needed.
+   - Behavioral and soft skill expectations.
+   - Outcome-oriented qualifications.
+4. **Strategic Metadata**: Provide 5-8 relevant, high-searchability tags, suggested duration, team size, and a realistic compensation range if not provided.
 
 Return response in this EXACT JSON format:
 {
-  "title": "Refined job title",
-  "description": "Full professional description...",
-  "requirements": "• Requirement 1\\n• Requirement 2\\n• Requirement 3...",
-  "suggestedTags": ["Tag1", "Tag2", "Tag3"],
-  "duration": "3-6 months",
-  "teamSize": "2-3 people",
-  "compensation": "Unpaid / Course Credit / $X-$Y"
+  "title": "Elite Job Title",
+  "description": "Sophisticated professional narrative...",
+  "requirements": "• Outcome-based requirement 1\\n• Outcome-based requirement 2...",
+  "suggestedTags": ["ModernTag1", "ModernTag2", ...],
+  "duration": "Optimized duration",
+  "teamSize": "Ideal collaboration size",
+  "compensation": "Market-standard compensation"
 }
 
 IMPORTANT:
-- Be specific and actionable
-- Use professional language
-- Make requirements clear and achievable
-- Ensure tags are relevant and searchable
-- Return ONLY valid JSON`;
+- Use sophisticated, evocative language.
+- Focus on outcomes and ownership.
+- Ensure requirements are rigorous but appropriate for student talent.
+- Return ONLY valid JSON.`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],

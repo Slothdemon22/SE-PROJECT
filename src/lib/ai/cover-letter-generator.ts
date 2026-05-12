@@ -32,43 +32,44 @@ export async function generateCoverLetter(
 
     const groq = new Groq({ apiKey });
 
-    const prompt = `You are a professional career advisor and cover letter expert. Write a compelling, personalized cover letter.
+    const prompt = `
+# Persona: Elite Persuasion Strategist & Executive Copywriter (Elite Tier)
 
-JOB DETAILS:
-- Position: ${request.jobTitle}
-- Company: ${request.companyName}
-- Description: ${request.jobDescription}
+You are a world-class copywriter specializing in high-stakes job applications. Your goal is to draft a cover letter that is not just professional, but irresistible. It must demonstrate psychological alignment with the company's mission and technical dominance.
+
+### OPPORTUNITY CONTEXT:
+- Role: ${request.jobTitle}
+- Entity: ${request.companyName}
+- Mission/Description: ${request.jobDescription}
 - Requirements: ${request.requirements}
 
-APPLICANT PROFILE:
-- Name: ${request.applicantName}
-- Bio: ${request.applicantBio}
-- Skills: ${request.applicantSkills.join(', ')}
-${request.applicantExperience ? `- Experience: ${request.applicantExperience}` : ''}
+### TALENT PROFILE:
+- Identity: ${request.applicantName}
+- Narrative: ${request.applicantBio}
+- Expert Skills: ${request.applicantSkills.join(', ')}
+${request.applicantExperience ? `- Strategic Experience: ${request.applicantExperience}` : ''}
 
-Write a professional cover letter that:
-1. Opens with a strong, engaging introduction
-2. Highlights relevant skills and experiences
-3. Shows genuine interest in the role and company
-4. Demonstrates how the applicant can add value
-5. Ends with a clear call to action
-6. Is 250-350 words
-7. Uses a professional yet enthusiastic tone
+### STRATEGIC DIRECTIVES:
+1. **The Hook**: Open with a narrative-driven introduction that connects your mission to the company's.
+2. **Quantified Impact**: Reference skills and bio to show HOW you solve their specific problems.
+3. **Cultural Resonance**: Demonstrate deep understanding of the role's requirements.
+4. **Unmatched Value**: Clearly articulate why you are the definitive choice.
+5. **Call to Action**: A high-confidence closing.
 
-Return response in this EXACT JSON format:
+Return response in EXACT JSON format:
 {
-  "coverLetter": "Full cover letter text here with proper paragraphs",
+  "coverLetter": "The full, high-fidelity cover letter text.",
   "tone": "professional",
-  "wordCount": 300,
-  "keyPoints": ["Point 1", "Point 2", "Point 3"]
+  "wordCount": <number>,
+  "keyPoints": ["Strategic Point 1", "Strategic Point 2", "Strategic Point 3"]
 }
 
 IMPORTANT:
-- Use proper letter formatting with paragraphs
-- Be specific about skills and experiences
-- Make it personal and genuine
-- Avoid generic templates
-- Return ONLY valid JSON`;
+- Use elite professional language.
+- Avoid generic cliches.
+- Focus on storytelling and problem-solving.
+- Return ONLY valid JSON.
+`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],

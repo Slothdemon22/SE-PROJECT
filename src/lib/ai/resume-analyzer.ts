@@ -86,37 +86,34 @@ export async function analyzeResumeWithAI(
  * Build prompt for AI resume analysis
  */
 function buildResumeAnalysisPrompt(resumeText: string, fileName: string): string {
-  return `
-You are an expert resume analyzer and career counselor. Analyze the following resume and provide detailed insights.
+  return `You are a senior executive recruiter and career strategist with decades of experience at top-tier firms like McKinsey, Google, and Goldman Sachs. Your mission is to perform a surgical analysis of the provided resume, identifying hidden potential and critical deficiencies.
 
 RESUME FILE: ${fileName}
 RESUME CONTENT:
-${resumeText.substring(0, 8000)} 
+${resumeText.substring(0, 8000)}
 
-ANALYSIS REQUIREMENTS:
-1. Extract and list ALL technical and soft skills mentioned
-2. Determine experience level (Entry Level, Junior, Mid Level, Senior, Expert)
-3. Estimate years of experience
-4. Identify key strengths and unique selling points
-5. Suggest improvements for the resume
-6. Recommend suitable job titles based on skills and experience
-7. Rate the resume quality (0-100)
-8. Provide professional insights
+ANALYSIS PROTOCOL:
+1. **Semantic Skill Extraction**: Identify not just keywords, but deep technical proficiencies and nuanced soft skills (e.g., "Architectural Design" over just "Java").
+2. **Experience Calibration**: Accurately assess seniority level (Entry Level, Junior, Mid Level, Senior, Expert) and calculate precisely the years of professional experience.
+3. **Strategic Value Props**: Identify the candidate's "superpowers"—strengths that make them stand out in an elite pool.
+4. **Actionable Optimization**: Provide rigorous, specific improvements that would elevate the resume to a "must-hire" status.
+5. **Career Pathing**: Recommend highly targeted job titles that align with the candidate's trajectory.
+6. **Executive Scoring**: Rate the resume quality (0-100) based on content, impact, and clarity.
 
-Return your analysis in this EXACT JSON format:
+Return your expert analysis in this EXACT JSON format:
 {
-  "summary": "<2-3 sentence professional summary of the candidate>",
-  "detectedSkills": ["skill1", "skill2", "skill3", ...],
+  "summary": "<Nuanced 2-3 sentence professional persona summary>",
+  "detectedSkills": ["Strategic skill 1", "Strategic skill 2", ...],
   "experienceLevel": "<Entry Level|Junior|Mid Level|Senior|Expert>",
   "yearsOfExperience": <number>,
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>", "<strength 4>", "<strength 5>"],
-  "improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "suggestedJobTitles": ["<job title 1>", "<job title 2>", "<job title 3>"],
+  "strengths": ["<Elite strength 1>", "<Elite strength 2>", "<Elite strength 3>", "<Elite strength 4>", "<Elite strength 5>"],
+  "improvements": ["<Surgical improvement 1>", "<Surgical improvement 2>", "<Surgical improvement 3>"],
+  "suggestedJobTitles": ["<Targeted role 1>", "<Targeted role 2>", "<Targeted role 3>"],
   "overallScore": <number 0-100>,
   "insights": {
-    "education": "<education background summary>",
-    "professionalSummary": "<detailed professional background>",
-    "keyAchievements": ["<achievement 1>", "<achievement 2>", "<achievement 3>"]
+    "education": "<Executive summary of academic background>",
+    "professionalSummary": "<Deep-dive strategic background analysis>",
+    "keyAchievements": ["<High-impact achievement 1>", "<High-impact achievement 2>", "<High-impact achievement 3>"]
   }
 }
 `;

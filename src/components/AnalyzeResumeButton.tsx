@@ -47,14 +47,6 @@ export default function AnalyzeResumeButton({
       setLoading(true);
       setError('');
 
-      // Check file type from fileName
-      const isPDF = fileName.toLowerCase().endsWith('.pdf');
-      if (isPDF) {
-        alert('⚠️ PDF Analysis Not Available\n\nAI analysis is only available for DOCX and TXT files.\n\nTo analyze your resume:\n1. Convert your PDF to DOCX (Open PDF → Save As → Word Document)\n2. Upload the DOCX file\n3. Use AI Analysis\n\nDon\'t worry - you can still apply with your PDF resume!');
-        setLoading(false);
-        return;
-      }
-
       // Download the file
       const fileResponse = await fetch(fileUrl);
       if (!fileResponse.ok) {
@@ -135,7 +127,7 @@ export default function AnalyzeResumeButton({
       console.error('Error analyzing resume:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to analyze resume';
       setError(errorMessage);
-      alert(`Error analyzing resume:\n\n${errorMessage}\n\nPlease make sure your resume is in DOCX or TXT format.`);
+      alert(`Error analyzing resume:\n\n${errorMessage}\n\nPlease make sure your resume is in PDF, DOCX, or TXT format.`);
     } finally {
       setLoading(false);
     }

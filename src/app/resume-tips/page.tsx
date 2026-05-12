@@ -17,7 +17,7 @@ export default async function ResumeTipsPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1400px] px-6 py-16 md:px-12 lg:px-20">
         <ResumeTipsClient />
       </main>
     </div>

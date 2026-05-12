@@ -60,7 +60,7 @@ export default async function JobsPage() {
     <div className="min-h-screen bg-slate-950">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1600px] px-6 pt-20 pb-16 md:px-12 lg:px-16">
         <JobsListClient
           jobs={jobs}
           currentUserId={profile.id}

@@ -34,44 +34,44 @@ export async function generateInterviewTips(
 
     const groq = new Groq({ apiKey });
 
-    const prompt = `You are an expert career coach specializing in interview preparation. Generate comprehensive interview tips for this candidate.
+    const prompt = `You are an elite Performance Coach and High-Stakes Interview Strategist. Your mission is to prepare the candidate to deliver a world-class interview performance for this specific role.
 
-JOB DETAILS:
+JOB CONTEXT:
 - Position: ${request.jobTitle}
-- Description: ${request.jobDescription}
+- Objective: ${request.jobDescription}
 - Requirements: ${request.requirements}
 
-CANDIDATE PROFILE:
+CANDIDATE STRENGTHS:
 - Skills: ${request.applicantSkills.join(', ')}
-${request.applicantExperience ? `- Experience: ${request.applicantExperience}` : ''}
+${request.applicantExperience ? `- Background: ${request.applicantExperience}` : ''}
 
-Generate interview preparation guidance including:
-1. 5-7 common interview questions specific to this role
-2. Key points the candidate should highlight
-3. Things to avoid during the interview
-4. Pre-interview preparation checklist
-5. Overall advice
+COACHING PROTOCOL:
+1. **Psychological Preparation**: Identify 5-7 high-impact, role-specific questions and provide "Winner's Framework" answers.
+2. **Value Mapping**: Highlight 3-5 strategic points the candidate must weave into their narrative.
+3. **Pitfall Avoidance**: Identify subtle "red flag" behaviors specific to this industry or role.
+4. **The Final Countdown**: Provide a rigorous preparation checklist for the 24 hours leading up to the interview.
+5. **Executive Advice**: A final strategic briefing to settle nerves and sharpen focus.
 
 Return response in this EXACT JSON format:
 {
   "commonQuestions": [
     {
-      "question": "Tell me about yourself",
-      "suggestedAnswer": "A brief answer template",
-      "tips": "How to approach this question"
+      "question": "High-impact question",
+      "suggestedAnswer": "Strategic narrative framework",
+      "tips": "Psychological approach to this question"
     }
   ],
-  "keyPointsToHighlight": ["Point 1", "Point 2", "Point 3"],
-  "thingsToAvoid": ["Mistake 1", "Mistake 2", "Mistake 3"],
-  "preparationChecklist": ["Task 1", "Task 2", "Task 3"],
-  "overallAdvice": "General interview advice for this role"
+  "keyPointsToHighlight": ["Strategic Point 1", "Strategic Point 2", ...],
+  "thingsToAvoid": ["Red Flag 1", "Red Flag 2", ...],
+  "preparationChecklist": ["Critical Task 1", "Critical Task 2", ...],
+  "overallAdvice": "Final high-stakes coaching brief"
 }
 
 IMPORTANT:
-- Be specific to the role and company
-- Provide actionable advice
-- Keep answers concise but helpful
-- Return ONLY valid JSON`;
+- Focus on high-level strategy and executive presence.
+- Be specific to the role's unique challenges.
+- Ensure advice is actionable and sophisticated.
+- Return ONLY valid JSON.`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],

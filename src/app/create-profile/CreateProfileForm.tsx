@@ -169,187 +169,166 @@ export function CreateProfileForm({ user }: CreateProfileFormProps) {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Error Alert */}
-      {error && (
-        <div className="glass-card px-4 py-3" style={{ 
-          background: 'rgba(239, 68, 68, 0.1)',
-          borderColor: 'rgba(239, 68, 68, 0.3)',
-          color: '#dc2626'
-        }}>
-          {error}
+  return (
+    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">
+          Step 1: Identity
         </div>
-      )}
-
-      {/* Avatar Upload */}
-      <div>
-        <Label className="text-lg font-semibold mb-3 block" style={{ color: 'var(--foreground)' }}>
-          Profile Photo
-        </Label>
-        <AvatarUpload
-          currentUrl={formData.avatarUrl}
-          onUpload={(url: string) => updateField('avatarUrl', url)}
-        />
-      </div>
-
-      {/* Basic Information */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          Basic Information
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <Label htmlFor="fullName" style={{ color: 'var(--foreground)' }}>
-              Full Name *
-            </Label>
-            <Input
-              id="fullName"
-              value={formData.fullName}
-              onChange={(e) => updateField('fullName', e.target.value)}
-              placeholder="John Doe"
-              required
-              minLength={2}
-              maxLength={100}
-              pattern="[a-zA-Z\s'-]+"
-              title="Full name can only contain letters, spaces, hyphens and apostrophes"
-              className="mt-2 glass-input"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="email" style={{ color: 'var(--foreground)' }}>
-              Email
-            </Label>
-            <Input
-              id="email"
-              value={formData.email}
-              disabled
-              className="mt-2 glass-input opacity-60 cursor-not-allowed"
-            />
-          </div>
-        </div>
-
-          <div>
-            <Label htmlFor="bio" style={{ color: 'var(--foreground)' }}>
-              Bio / About Me
-            </Label>
-            <textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => updateField('bio', e.target.value)}
-              placeholder="Tell us about yourself... What are you passionate about? What are your goals?"
-              rows={4}
-              maxLength={500}
-              className="mt-2 w-full glass-input resize-none"
-            />
-            <p className="text-sm mt-1" style={{ color: 'var(--foreground-muted)' }}>
-              {formData.bio.length}/500 characters - A good bio helps others understand your background
-            </p>
-          </div>
-      </div>
-
-      {/* Academic Information */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          Academic Details
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <Label htmlFor="department" style={{ color: 'var(--foreground)' }}>
-              Department / Major
-            </Label>
-            <select
-              id="department"
-              value={formData.department}
-              onChange={(e) => updateField('department', e.target.value)}
-              className="mt-2 w-full glass-input"
-            >
-              <option value="">Select your department</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <Label htmlFor="year" style={{ color: 'var(--foreground)' }}>
-              Academic Year / Level
-            </Label>
-            <select
-              id="year"
-              value={formData.year}
-              onChange={(e) => updateField('year', e.target.value)}
-              className="mt-2 w-full glass-input"
-            >
-              <option value="">Select your year</option>
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Role Selection */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          How will you use CampusConnect?
-        </h2>
-        <RoleSelector
-          selectedRole={formData.role}
-          onSelect={(role: 'FINDER' | 'SEEKER') => updateField('role', role)}
-        />
-        <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-          You can always switch between roles later
+        <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-tight">
+          Craft Your <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Legacy</span>
+        </h1>
+        <p className="text-xl text-slate-400 max-w-2xl mx-auto font-medium">
+          Let's build a profile that stands out to the best opportunities in the ecosystem.
         </p>
       </div>
 
-      {/* Skills */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          Your Skills *
-        </h2>
-        <SkillsInput
-          skills={formData.skills}
-          onChange={(skills: string[]) => updateField('skills', skills)}
-        />
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {error && (
+          <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-3xl animate-in fade-in slide-in-from-top-2 text-center">
+            <p className="text-sm text-red-400 font-bold">{error}</p>
+          </div>
+        )}
 
-      {/* Interests */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-          Your Interests *
-        </h2>
-        <InterestsInput
-          interests={formData.interests}
-          onChange={(interests: string[]) => updateField('interests', interests)}
-        />
-      </div>
+        {/* Section 1: Visual Identity */}
+        <div className="p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[3rem] shadow-2xl relative overflow-hidden group transition-all hover:border-white/10">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
+          <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-10 relative z-10">Visual Presentation</h3>
+          
+          <div className="relative z-10">
+             <AvatarUpload
+              currentUrl={formData.avatarUrl}
+              onUpload={(url: string) => updateField('avatarUrl', url)}
+            />
+          </div>
+        </div>
 
-      {/* Submit Button */}
-      <div className="pt-6" style={{ borderTop: '1px solid var(--border)' }}>
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-gradient w-full h-14 text-lg font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin inline" />
-              Creating your profile...
-            </>
-          ) : (
-            'Create Profile'
-          )}
-        </button>
-      </div>
-    </form>
-  );
+        {/* Section 2: Personal Narrative */}
+        <div className="p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[3rem] shadow-2xl transition-all hover:border-white/10">
+          <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-10">Personal Narrative</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <Label className="text-sm font-bold text-slate-300 ml-1">Full Identity *</Label>
+              <Input
+                value={formData.fullName}
+                onChange={(e) => updateField('fullName', e.target.value)}
+                placeholder="How should the world know you?"
+                className="bg-slate-950/50 border-white/5 text-white rounded-2xl h-14 px-6 focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-700"
+                required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-bold text-slate-300 ml-1">Verified Email</Label>
+              <Input
+                value={formData.email}
+                disabled
+                className="bg-slate-950/30 border-white/5 text-slate-500 rounded-2xl h-14 px-6 opacity-60 cursor-not-allowed"
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-3 pt-4">
+              <div className="flex justify-between items-center px-1">
+                <Label className="text-sm font-bold text-slate-300">Professional Bio</Label>
+                <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{formData.bio.length}/500</span>
+              </div>
+              <textarea
+                value={formData.bio}
+                onChange={(e) => updateField('bio', e.target.value)}
+                placeholder="Tell your story. What drives you? What's your unique edge?"
+                className="bg-slate-950/50 border-white/5 text-white rounded-[2rem] w-full min-h-[160px] p-8 focus:ring-2 focus:ring-blue-500/50 transition-all resize-none placeholder:text-slate-700 leading-relaxed"
+                maxLength={500}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Academic & Strategic Focus */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[3rem] shadow-2xl transition-all hover:border-white/10">
+             <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-8">Academic Standing</h3>
+             <div className="space-y-6">
+               <div className="space-y-3">
+                 <Label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Primary Department</Label>
+                 <select
+                  value={formData.department}
+                  onChange={(e) => updateField('department', e.target.value)}
+                  className="w-full bg-slate-950/50 border-white/5 text-white rounded-2xl h-14 px-6 focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="" className="bg-slate-900">Select Department</option>
+                  {departments.map(dept => <option key={dept} value={dept} className="bg-slate-900">{dept}</option>)}
+                </select>
+               </div>
+               <div className="space-y-3">
+                 <Label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Current Year</Label>
+                 <select
+                  value={formData.year}
+                  onChange={(e) => updateField('year', e.target.value)}
+                  className="w-full bg-slate-950/50 border-white/5 text-white rounded-2xl h-14 px-6 focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="" className="bg-slate-900">Select Year</option>
+                  {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+                </select>
+               </div>
+             </div>
+          </div>
+
+          <div className="p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[3rem] shadow-2xl transition-all hover:border-white/10">
+             <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-8">Ecosystem Role</h3>
+             <RoleSelector
+                selectedRole={formData.role}
+                onSelect={(role: 'FINDER' | 'SEEKER') => updateField('role', role)}
+              />
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-6 text-center italic">
+                Fluid role: Switch anytime after onboarding
+              </p>
+          </div>
+        </div>
+
+        {/* Section 4: Expertise & Passions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <div className="p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[3rem] shadow-2xl transition-all hover:border-white/10">
+             <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-8">Expert Skills *</h3>
+             <SkillsInput
+                skills={formData.skills}
+                onChange={(skills: string[]) => updateField('skills', skills)}
+              />
+           </div>
+           <div className="p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[3rem] shadow-2xl transition-all hover:border-white/10">
+             <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-8">Core Interests *</h3>
+             <InterestsInput
+                interests={formData.interests}
+                onChange={(interests: string[]) => updateField('interests', interests)}
+              />
+           </div>
+        </div>
+
+        {/* Submit */}
+        <div className="pt-8">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2rem] h-20 text-xl shadow-2xl shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>Synchronizing Profile...</span>
+              </>
+            ) : (
+              <>
+                <span>Complete Profile Initialization</span>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
 }
 

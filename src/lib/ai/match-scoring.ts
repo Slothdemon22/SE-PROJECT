@@ -84,44 +84,29 @@ export async function calculateMatchScore(
  */
 function buildMatchPrompt(request: MatchScoreRequest): string {
   return `
-You are an expert recruiter analyzing how well a candidate matches a job posting.
+You are an elite talent acquisition specialist at a top-tier tech firm. Your task is to perform a high-fidelity analysis of the match between a candidate and a specific job opportunity.
 
-JOB DETAILS:
-Title: ${request.jobTitle}
-Description: ${request.jobDescription}
-Requirements: ${request.jobRequirements || 'Not specified'}
-Required Skills/Tags: ${request.jobTags.join(', ')}
+CRITICAL EVALUATION CRITERIA:
+1. **Technical Proficiency**: Deep dive into the alignment between ${request.jobTags.join(', ')} and the candidate's actual skill set.
+2. **Academic & Professional Trajectory**: Analyze the ${request.applicantDepartment} background and ${request.applicantYear} status for role appropriateness.
+3. **Intent & Motivation**: Evaluate the nuance in the applicant's proposal and bio. Look for genuine passion and specific value propositions.
+4. **Cultural & Visionary Fit**: Does this candidate show signs of being a high-impact contributor?
+5. **Gaps & Risks**: Be honest about missing critical skills or experience.
 
-APPLICANT DETAILS:
-Department: ${request.applicantDepartment || 'Not specified'}
-Year: ${request.applicantYear || 'Not specified'}
-Bio: ${request.applicantBio || 'Not provided'}
-Skills: ${request.applicantSkills.length > 0 ? request.applicantSkills.join(', ') : 'None listed'}
-Interests: ${request.applicantInterests.length > 0 ? request.applicantInterests.join(', ') : 'None listed'}
-Application Proposal: ${request.applicantProposal || 'No proposal provided'}
+SCORING PHILOSOPHY:
+- **90-100**: Exceptional elite talent. Almost zero gaps.
+- **75-89**: High-potential candidate. Strong alignment with minor learning curves.
+- **60-74**: Competent match. Requires some oversight or training in specific areas.
+- **40-59**: Significant gaps. Potential "stretch" candidate.
+- **0-39**: Misalignment. Critical requirements not met.
 
-TASK:
-Analyze the match between this candidate and job posting. Consider:
-1. Technical skills alignment
-2. Experience level (based on year/department)
-3. Interest and motivation (from bio and proposal)
-4. Cultural fit and enthusiasm
-5. Transferable skills
-
-Provide a match score from 0-100 where:
-- 90-100: Excellent match, highly recommended
-- 75-89: Very good match, strong candidate
-- 60-74: Good match, worth considering
-- 40-59: Moderate match, some gaps
-- 0-39: Poor match, significant gaps
-
-Return your analysis in this EXACT JSON format:
+Return your expert analysis in this EXACT JSON format:
 {
   "score": <number 0-100>,
-  "reasoning": "<2-3 sentence explanation of the score>",
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "gaps": ["<gap 1>", "<gap 2>", "<gap 3>"],
-  "recommendation": "<brief hiring recommendation>"
+  "reasoning": "<Nuanced 2-3 sentence executive summary of the match>",
+  "strengths": ["<Unique value prop 1>", "<Unique value prop 2>", "<Unique value prop 3>"],
+  "gaps": ["<Critical gap 1>", "<Critical gap 2>", "<Critical gap 3>"],
+  "recommendation": "<Strategic hiring recommendation for the manager>"
 }
 `;
 }
