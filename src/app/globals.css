@@ -154,3 +154,61 @@ html {
   background: var(--accent);
   color: white;
 }
+
+/* Minimal enterprise surface primitives */
+.page-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    padding: 3rem 1.5rem 4rem;
+  }
+}
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: var(--foreground-muted);
+}
+
+.surface-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+
+.surface-card-muted {
+  background: rgba(21, 26, 36, 0.6);
+  border: 1px solid rgba(43, 53, 68, 0.8);
+  border-radius: 1rem;
+}
+
+.surface-kpi {
+  background: rgba(11, 14, 20, 0.55);
+  border: 1px solid rgba(43, 53, 68, 0.7);
+  border-radius: 0.875rem;
+  padding: 1rem;
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(45, 140, 255, 0.45);
+}

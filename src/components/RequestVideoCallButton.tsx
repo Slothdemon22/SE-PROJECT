@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Video, X, Calendar, MessageSquare, Loader2, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 
 interface RequestVideoCallButtonProps {
   jobId: string
@@ -26,6 +27,7 @@ export function RequestVideoCallButton({
   className = ''
 }: RequestVideoCallButtonProps) {
   const router = useRouter()
+  const toast = useToast()
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -95,7 +97,7 @@ export function RequestVideoCallButton({
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/video-call/${existingRequest.id}`)
-                  alert('Link copied to clipboard!')
+                  toast.success('Link copied to clipboard')
                 }}
                 variant="outline"
                 size="sm"
@@ -173,13 +175,16 @@ export function RequestVideoCallButton({
       }
 
       setSuccess(true)
+      toast.success('Video interview request sent successfully')
       setTimeout(() => {
         router.refresh()
         setShowForm(false)
       }, 2000)
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send request')
+      const message = err instanceof Error ? err.message : 'Failed to send request'
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }

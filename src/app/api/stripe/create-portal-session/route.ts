@@ -18,9 +18,8 @@ export async function POST(request: NextRequest) {
       where: { userId: user.id },
     })
 
-    // Assume stripeCustomerId is stored in the user metadata or a similar field
-    // Adjust this according to your schema
-    const stripeCustomerId = (dbUser as any)?.stripeCustomerId;
+    const stripeCustomerId =
+      (dbUser as { stripeCustomerId?: string | null } | null)?.stripeCustomerId ?? null
 
     if (!stripeCustomerId) {
       return NextResponse.json(
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
     const appUrl = getAppUrl(request)
 
     const session = await StripeService.createPortalSession(
-      dbUser.stripeCustomerId,
+      stripeCustomerId,
       `${appUrl}/billing`
     )
 

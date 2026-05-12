@@ -36,6 +36,7 @@ const SUGGESTED_SKILLS = [
 
 export function SkillsInput({ skills, onChange }: SkillsInputProps) {
   const [inputValue, setInputValue] = useState('');
+  const [inlineError, setInlineError] = useState('');
 
   const addSkill = (skill: string) => {
     const trimmedSkill = skill.trim();
@@ -43,22 +44,23 @@ export function SkillsInput({ skills, onChange }: SkillsInputProps) {
     if (!trimmedSkill) return;
     
     if (trimmedSkill.length > 50) {
-      alert('Skill name too long (max 50 characters)');
+      setInlineError('Skill is too long (max 50 characters).');
       return;
     }
     
     if (skills.length >= 20) {
-      alert('Maximum 20 skills allowed');
+      setInlineError('Maximum 20 skills allowed.');
       return;
     }
     
     if (skills.includes(trimmedSkill)) {
-      alert('This skill already exists');
+      setInlineError('This skill already exists.');
       return;
     }
     
     onChange([...skills, trimmedSkill]);
     setInputValue('');
+    setInlineError('');
   };
 
   const removeSkill = (skillToRemove: string) => {
@@ -81,35 +83,36 @@ export function SkillsInput({ skills, onChange }: SkillsInputProps) {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Add a skill (e.g., React, Python, Design...)"
-          className="glass-input"
+          className="bg-slate-950/60 border-white/10 text-white"
           maxLength={50}
         />
         <Button
           type="button"
           onClick={() => addSkill(inputValue)}
-          className="btn-gradient"
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
 
+      {inlineError && (
+        <p className="text-xs text-amber-300">{inlineError}</p>
+      )}
+
       {/* Selected Skills */}
       {skills.length > 0 && (
-        <div className="glass-card flex flex-wrap gap-2 p-4" style={{ 
-          background: 'rgba(59, 130, 246, 0.05)',
-          borderColor: 'rgba(59, 130, 246, 0.2)'
-        }}>
+        <div className="surface-card-muted flex flex-wrap gap-2 p-4">
           {skills.map((skill) => (
             <Badge
               key={skill}
               variant="secondary"
-              className="px-3 py-1.5 text-sm flex items-center gap-2 glass-card"
+              className="px-3 py-1.5 text-sm flex items-center gap-2 border border-blue-500/20 bg-blue-500/10 text-blue-300"
             >
               {skill}
               <button
                 type="button"
                 onClick={() => removeSkill(skill)}
-                className="hover:text-red-600 transition-colors"
+                className="hover:text-rose-300 transition-colors"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -120,7 +123,7 @@ export function SkillsInput({ skills, onChange }: SkillsInputProps) {
 
       {/* Suggested Skills */}
       <div>
-        <p className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
+        <p className="text-sm font-medium mb-2 text-slate-200">
           Suggested Skills (click to add):
         </p>
         <div className="flex flex-wrap gap-2">
@@ -129,13 +132,7 @@ export function SkillsInput({ skills, onChange }: SkillsInputProps) {
               key={skill}
               type="button"
               onClick={() => addSkill(skill)}
-              className="px-3 py-1.5 text-sm rounded-full transition-all hover:scale-105"
-              style={{
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                color: 'var(--foreground)',
-                backdropFilter: 'blur(8px)'
-              }}
+              className="px-3 py-1.5 text-sm rounded-full transition-colors border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
             >
               + {skill}
             </button>
@@ -143,7 +140,7 @@ export function SkillsInput({ skills, onChange }: SkillsInputProps) {
         </div>
       </div>
 
-      <p className="text-sm" style={{ color: 'var(--foreground)', opacity: 0.6 }}>
+      <p className="text-sm text-slate-500">
         Added {skills.length}/20 skill{skills.length !== 1 ? 's' : ''} • These help match you with relevant opportunities
       </p>
     </div>

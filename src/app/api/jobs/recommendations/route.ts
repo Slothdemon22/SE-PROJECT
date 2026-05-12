@@ -63,7 +63,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get AI recommendations
-    const recommendations = await getJobRecommendations(
+    const recommendationResult = await getJobRecommendations(
       {
         fullName: profile.fullName,
         bio: profile.bio,
@@ -75,7 +75,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       jobs
     );
 
-    return NextResponse.json(recommendations);
+    const jobsById = new Map(jobs.map(job => [job.id, job]))
+    const recommendations = recommendationResult.recommendations
+      .map((recommendation) => {
+        const job = jobsById.get(recommendation.jobId)
+        if (!job) return null
+
+        return {
+          id: job.id,
+          title: job.title,
+          description: job.description,
+          jobType: job.type,
+          location: job.location,
+          matchScore: recommendation.score,
+          reasoning: recommendation.reasoning,
+          matchHighlights: recommendation.matchHighlights,
+          growthPotential: recommendation.growthPotential,
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .sort((a, b) => b.matchScore - a.matchScore)
+
+    return NextResponse.json({
+      recommendations,
+      careerInsights: recommendationResult.careerInsights,
+      topSkillsToLearn: recommendationResult.topSkillsToLearn,
+    });
   } catch (error) {
     console.error('Error getting job recommendations:', error);
     return NextResponse.json(

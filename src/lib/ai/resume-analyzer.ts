@@ -39,7 +39,7 @@ export async function analyzeResumeWithAI(
       messages: [{ role: 'user', content: prompt }],
       model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
-      temperature: 0.7,
+      temperature: 0.3,
     });
 
     const text = chatCompletion.choices[0].message.content || '{}';
@@ -61,18 +61,18 @@ export async function analyzeResumeWithAI(
 
     // Validate and normalize the response
     return {
-      summary: aiResponse.summary || 'No summary available',
-      detectedSkills: Array.isArray(aiResponse.detectedSkills) ? aiResponse.detectedSkills.slice(0, 20) : [],
+      summary: (aiResponse.summary || 'No summary available').trim(),
+      detectedSkills: sanitizeStringList(aiResponse.detectedSkills, 20),
       experienceLevel: validateExperienceLevel(aiResponse.experienceLevel),
       yearsOfExperience: typeof aiResponse.yearsOfExperience === 'number' ? aiResponse.yearsOfExperience : 0,
-      strengths: Array.isArray(aiResponse.strengths) ? aiResponse.strengths.slice(0, 5) : [],
-      improvements: Array.isArray(aiResponse.improvements) ? aiResponse.improvements.slice(0, 5) : [],
-      suggestedJobTitles: Array.isArray(aiResponse.suggestedJobTitles) ? aiResponse.suggestedJobTitles.slice(0, 5) : [],
+      strengths: sanitizeStringList(aiResponse.strengths, 5),
+      improvements: sanitizeStringList(aiResponse.improvements, 5),
+      suggestedJobTitles: sanitizeStringList(aiResponse.suggestedJobTitles, 5),
       overallScore: Math.max(0, Math.min(100, aiResponse.overallScore || 50)),
       insights: {
-        education: aiResponse.insights?.education || 'Not specified',
-        professionalSummary: aiResponse.insights?.professionalSummary || 'Not available',
-        keyAchievements: Array.isArray(aiResponse.insights?.keyAchievements) ? aiResponse.insights.keyAchievements.slice(0, 3) : [],
+        education: (aiResponse.insights?.education || 'Not specified').trim(),
+        professionalSummary: (aiResponse.insights?.professionalSummary || 'Not available').trim(),
+        keyAchievements: sanitizeStringList(aiResponse.insights?.keyAchievements, 3),
       },
     };
   } catch (error) {
@@ -97,6 +97,8 @@ ANALYSIS PROTOCOL:
 2. **Experience Calibration**: Accurately assess seniority level (Entry Level, Junior, Mid Level, Senior, Expert) and calculate precisely the years of professional experience.
 3. **Strategic Value Props**: Identify the candidate's "superpowers"—strengths that make them stand out in an elite pool.
 4. **Actionable Optimization**: Provide rigorous, specific improvements that would elevate the resume to a "must-hire" status.
+   - Each improvement must begin with an action verb and include a concrete example.
+   - Focus on the highest-impact fixes first.
 5. **Career Pathing**: Recommend highly targeted job titles that align with the candidate's trajectory.
 6. **Executive Scoring**: Rate the resume quality (0-100) based on content, impact, and clarity.
 
@@ -115,6 +117,25 @@ Return your expert analysis in this EXACT JSON format:
     "professionalSummary": "<Deep-dive strategic background analysis>",
     "keyAchievements": ["<High-impact achievement 1>", "<High-impact achievement 2>", "<High-impact achievement 3>"]
   }
+}
+
+function sanitizeStringList(value: unknown, limit: number): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const unique = new Set<string>()
+  for (const entry of value) {
+    if (typeof entry !== 'string') continue
+    const cleaned = entry.trim()
+    if (!cleaned) continue
+    if (!unique.has(cleaned)) {
+      unique.add(cleaned)
+    }
+    if (unique.size >= limit) break
+  }
+
+  return Array.from(unique)
 }
 `;
 }

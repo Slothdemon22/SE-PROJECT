@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="page-shell pt-20">
         <DashboardClient profile={profile} serverActiveRole={activeRole} />
       </main>
     </div>

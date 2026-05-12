@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resend, EMAIL_CONFIG, isEmailEnabled } from '@/lib/email/config'
+import { resend, isEmailEnabled } from '@/lib/email/config'
 import { sendWelcomeEmail } from '@/lib/email/service'
 
 /**
@@ -32,6 +32,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Test 1: Simple email using Resend directly
     console.log('📧 Sending test email to:', recipientEmail)
     
+    if (!resend) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Email service not configured',
+        },
+        { status: 400 }
+      )
+    }
+
     const { data, error } = await resend.emails.send({
       from: 'onboarding@zalnex.me',
       to: recipientEmail,

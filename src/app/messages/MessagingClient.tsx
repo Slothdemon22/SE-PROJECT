@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { useToast } from '@/components/ui/toast'
 import { 
   MessageSquare, 
   Send, 
@@ -43,6 +44,7 @@ interface Message {
 }
 
 export function MessagingClient({ userId, userEmail }: MessagingClientProps) {
+  const toast = useToast()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -67,7 +69,7 @@ export function MessagingClient({ userId, userEmail }: MessagingClientProps) {
     if (!trimmedMessage) return
     
     if (trimmedMessage.length > 2000) {
-      alert('Message must be less than 2000 characters')
+      toast.warning('Message must be less than 2000 characters')
       return
     }
 

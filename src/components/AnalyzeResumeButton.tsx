@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { useToast } from './ui/toast';
 
 interface AnalyzeResumeButtonProps {
   resumeId: string;
@@ -39,6 +40,7 @@ export default function AnalyzeResumeButton({
   size = 'sm',
 }: AnalyzeResumeButtonProps): JSX.Element {
   const router = useRouter();
+  const toast = useToast();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
@@ -55,9 +57,11 @@ export default function AnalyzeResumeButton({
 
       const blob = await fileResponse.blob();
       
-      // Determine correct MIME type
-      let mimeType = blob.type;
-      if (fileName.toLowerCase().endsWith('.docx')) {
+      // Determine correct MIME type (blob.type can be empty from storage URLs)
+      let mimeType = blob.type || '';
+      if (fileName.toLowerCase().endsWith('.pdf')) {
+        mimeType = 'application/pdf';
+      } else if (fileName.toLowerCase().endsWith('.docx')) {
         mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       } else if (fileName.toLowerCase().endsWith('.txt')) {
         mimeType = 'text/plain';
@@ -127,7 +131,7 @@ export default function AnalyzeResumeButton({
       console.error('Error analyzing resume:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to analyze resume';
       setError(errorMessage);
-      alert(`Error analyzing resume:\n\n${errorMessage}\n\nPlease make sure your resume is in PDF, DOCX, or TXT format.`);
+      toast.error(`${errorMessage} Please make sure your resume is in PDF, DOCX, or TXT format.`);
     } finally {
       setLoading(false);
     }

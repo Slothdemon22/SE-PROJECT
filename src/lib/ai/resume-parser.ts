@@ -7,9 +7,7 @@ if (typeof global !== 'undefined') {
   if (!(global as any).Path2D) (global as any).Path2D = class Path2D {};
 }
 
-const pdf = require('pdf-parse');
-// @ts-ignore
-const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
+const pdfParseModule = require('pdf-parse');
 
 interface ResumeParseResult {
   text: string;
@@ -21,40 +19,51 @@ interface ResumeParseResult {
  * Extract text from PDF buffer
  */
 async function parsePDF(buffer: Buffer): Promise<ResumeParseResult> {
-  let parser;
   try {
-    // @ts-ignore
-    if (pdfjs && pdfjs.GlobalWorkerOptions) {
-      pdfjs.GlobalWorkerOptions.workerSrc = false;
+    // pdf-parse v2 exports a class (PDFParse), while v1 exported a callable function.
+    const PDFParseCtor =
+      pdfParseModule?.PDFParse ??
+      pdfParseModule?.default?.PDFParse ??
+      null;
+    const legacyPdfParse =
+      typeof pdfParseModule === 'function'
+        ? pdfParseModule
+        : typeof pdfParseModule?.default === 'function'
+          ? pdfParseModule.default
+          : null;
+
+    let text = '';
+    let pageCount: number | undefined;
+
+    if (typeof PDFParseCtor === 'function') {
+      const parser = new PDFParseCtor({ data: buffer });
+      try {
+        const result = await parser.getText();
+        text = (result?.text || '').trim();
+        pageCount = typeof result?.total === 'number' ? result.total : undefined;
+      } finally {
+        await parser.destroy().catch(() => undefined);
+      }
+    } else if (typeof legacyPdfParse === 'function') {
+      const result = await legacyPdfParse(buffer);
+      text = (result?.text || '').trim();
+      pageCount = typeof result?.numpages === 'number' ? result.numpages : undefined;
+    } else {
+      throw new Error('Unsupported pdf-parse export shape');
     }
 
-    // @ts-ignore
-    if (typeof pdf.PDFParse.setWorker === 'function') {
-      pdf.PDFParse.setWorker(false);
+    if (!text) {
+      throw new Error('No text extracted from PDF');
     }
-    
-    parser = new pdf.PDFParse({ 
-      data: buffer,
-      disableWorker: true,
-      verbosity: 0
-    });
-    await parser.load();
-    
-    const textResult = await parser.getText();
-    const info = await parser.getInfo();
-    
+
     return {
-      text: textResult.text,
-      wordCount: textResult.text.split(/\s+/).length,
-      pageCount: info.total,
+      text,
+      wordCount: text.split(/\s+/).filter(Boolean).length,
+      pageCount,
     };
   } catch (error) {
     console.error('Error parsing PDF:', error);
     throw new Error('Failed to parse PDF file. Ensure it is not password protected.');
-  } finally {
-    if (parser) {
-      await parser.destroy();
-    }
   }
 }
 
@@ -81,32 +90,41 @@ async function parseDOCX(buffer: Buffer): Promise<ResumeParseResult> {
  */
 export async function parseResume(
   buffer: Buffer,
-  mimeType: string
+  mimeType: string,
+  fileName?: string
 ): Promise<ResumeParseResult> {
   try {
+    const normalizedMimeType = (mimeType || '').toLowerCase();
+    const normalizedFileName = (fileName || '').toLowerCase();
+
     // Handle PDF files
-    if (mimeType === 'application/pdf') {
+    if (
+      normalizedMimeType === 'application/pdf' ||
+      normalizedFileName.endsWith('.pdf')
+    ) {
       return await parsePDF(buffer);
     }
 
     // Handle DOCX files
     if (
-      mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      mimeType === 'application/msword'
+      normalizedMimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      normalizedMimeType === 'application/msword' ||
+      normalizedFileName.endsWith('.docx') ||
+      normalizedFileName.endsWith('.doc')
     ) {
       return await parseDOCX(buffer);
     }
 
     // Handle plain text files
-    if (mimeType === 'text/plain') {
+    if (normalizedMimeType === 'text/plain' || normalizedFileName.endsWith('.txt')) {
       const text = buffer.toString('utf-8');
       return {
         text,
-        wordCount: text.split(/\s+/).length,
+        wordCount: text.split(/\s+/).filter(Boolean).length,
       };
     }
 
-    throw new Error(`Unsupported file type: ${mimeType}`);
+    throw new Error(`Unsupported file type: ${mimeType || fileName || 'unknown'}`);
   } catch (error) {
     console.error('Error parsing resume:', error);
     throw error;

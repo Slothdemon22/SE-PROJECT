@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Upload, FileText, Trash2, Check, Loader2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { FileText, Check, Loader2, CreditCard, Sparkles, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import AnalyzeResumeButton from '@/components/AnalyzeResumeButton'
 import AICoverLetterGenerator from '@/components/AICoverLetterGenerator'
@@ -19,10 +19,20 @@ interface Resume {
 interface ApplicationFormProps {
   jobId: string
   jobTitle: string
+  isPaid?: boolean
+  paymentAmount?: number | null
+  paymentCurrency?: string
   onSuccess: () => void
 }
 
-export function ApplicationForm({ jobId, jobTitle, onSuccess }: ApplicationFormProps) {
+export function ApplicationForm({
+  jobId,
+  jobTitle,
+  isPaid = false,
+  paymentAmount = null,
+  paymentCurrency = 'USD',
+  onSuccess,
+}: ApplicationFormProps) {
   const [proposal, setProposal] = useState('')
   const [resumes, setResumes] = useState<Resume[]>([])
   const [selectedResumeId, setSelectedResumeId] = useState<string>('')
@@ -43,14 +53,13 @@ export function ApplicationForm({ jobId, jobTitle, onSuccess }: ApplicationFormP
         const data = await response.json()
         setResumes(data.resumes)
 
-        // Auto-select default resume
         const defaultResume = data.resumes.find((r: Resume) => r.isDefault)
         if (defaultResume) {
           setSelectedResumeId(defaultResume.id)
         }
       }
-    } catch (error) {
-      console.error('Error fetching resumes:', error)
+    } catch (err) {
+      console.error('Error fetching resumes:', err)
     } finally {
       setLoadingResumes(false)
     }
@@ -60,21 +69,15 @@ export function ApplicationForm({ jobId, jobTitle, onSuccess }: ApplicationFormP
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file - Only DOCX and TXT for AI analysis
     const allowedTypes = [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'text/plain',
-      'application/pdf', // Allow PDF but with limited functionality
+      'application/pdf',
     ]
 
     if (!allowedTypes.includes(file.type)) {
       setError('Please upload a DOCX, TXT, or PDF document')
       return
-    }
-
-    // Note: PDF files are now fully supported for AI analysis
-    if (file.type === 'application/pdf') {
-      // No warning needed
     }
 
     if (file.size > 5 * 1024 * 1024) {
@@ -97,24 +100,15 @@ export function ApplicationForm({ jobId, jobTitle, onSuccess }: ApplicationFormP
       })
 
       const data = await response.json()
-
       if (!response.ok) {
         throw new Error(data.error || 'Failed to upload resume')
       }
 
-      // Show success message with storage location
-      setSuccessMessage(
-        `✅ ${data.message}\n📍 Storage: ${data.storageLocation || 'Supabase Storage'}\n🔗 URL: ${data.resume.publicUrl}`
-      )
-
-      // Refresh resumes list
+      setSuccessMessage(`${data.message}`)
       await fetchResumes()
-
-      // Auto-select the newly uploaded resume
       setSelectedResumeId(data.resume.id)
 
-      // Clear success message after 8 seconds
-      setTimeout(() => setSuccessMessage(''), 8000)
+      setTimeout(() => setSuccessMessage(''), 5000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload resume')
     } finally {
@@ -150,7 +144,6 @@ export function ApplicationForm({ jobId, jobTitle, onSuccess }: ApplicationFormP
       })
 
       const data = await response.json()
-
       if (!response.ok) {
         throw new Error(data.error || 'Failed to submit application')
       }
@@ -163,191 +156,163 @@ export function ApplicationForm({ jobId, jobTitle, onSuccess }: ApplicationFormP
   }
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    return (bytes / (1024 * 1024)).toFixed(1) +  return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
-      {/* Proposal Section */}
-      <div className="p-8 md:p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-        
-        <div className="relative z-10 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Strategic Proposal</h3>
-              <p className="text-slate-400 font-medium text-sm">Quantify your impact and align your vision with the opportunity.</p>
-            </div>
-            <div className="shrink-0">
-               <AICoverLetterGenerator jobId={jobId} jobTitle={jobTitle} />
-            </div>
-          </div>
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
 
-          <div className="relative">
-            <textarea
-              className="w-full bg-slate-950/50 border border-white/5 text-white rounded-3xl min-h-[320px] p-8 focus:ring-2 focus:ring-blue-500/50 transition-all resize-none placeholder:text-slate-700 leading-relaxed font-medium"
-              placeholder="Craft your narrative here or use AI Intelligence to generate a high-conversion foundation..."
-              value={proposal}
-              onChange={(e) => setProposal(e.target.value)}
-              disabled={isSubmitting}
-            />
-            <div className="absolute bottom-6 right-8 flex items-center gap-4">
-               <div className="px-3 py-1 rounded-full bg-slate-900/80 border border-white/5 backdrop-blur-md">
-                 <span className={cn(
-                   "text-[10px] font-black uppercase tracking-widest",
-                   proposal.length >= 50 ? "text-blue-400" : "text-slate-500"
-                 )}>
-                   {proposal.length} Characters
-                 </span>
-               </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {isPaid && paymentAmount ? (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-emerald-500/20 p-2 text-emerald-300">
+              <CreditCard className="h-4 w-4" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-emerald-300">
+                Stripe-Verified Visibility Boost
+              </p>
+              <p className="text-sm text-emerald-100">
+                This role includes a visibility-backed compensation signal of{' '}
+                <span className="font-semibold">
+                  {paymentCurrency} {paymentAmount.toFixed(0)}
+                </span>
+                .
+              </p>
             </div>
           </div>
         </div>
+      ) : null}
+
+      <div className="surface-card-muted p-5 space-y-4">
+        <div className="section-header">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-1">Step 1 of 2</p>
+            <h3 className="text-base font-semibold text-white">Proposal</h3>
+            <p className="text-sm text-slate-400">Explain your fit and expected impact for this role.</p>
+          </div>
+          <AICoverLetterGenerator jobId={jobId} jobTitle={jobTitle} />
+        </div>
+
+        <textarea
+          className="w-full min-h-[220px] rounded-lg border border-white/10 bg-slate-950/60 p-4 text-sm text-white placeholder:text-slate-600"
+          placeholder="Write a concise, role-specific proposal (minimum 50 characters)."
+          value={proposal}
+          onChange={(e) => setProposal(e.target.value)}
+          disabled={isSubmitting}
+        />
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-slate-500">{proposal.length} characters</p>
+          <p className="text-xs text-slate-500">Tip: mention 1-2 relevant projects and measurable outcomes.</p>
+        </div>
       </div>
 
-      {/* Assets Section */}
-      <div className="p-8 md:p-10 bg-slate-900/40 border border-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl">
-        <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-8">Professional Assets</h3>
-        
-        <div className="grid grid-cols-1 gap-8">
-          {/* Upload Area */}
-          <div className="relative group">
-            <input
-              type="file"
-              id="resume-upload"
-              accept=".docx,.txt,.pdf"
-              onChange={handleFileUpload}
-              disabled={isUploading || isSubmitting}
-              className="hidden"
-            />
-            <label
-              htmlFor="resume-upload"
-              className={cn(
-                "flex flex-col items-center justify-center gap-4 p-10 rounded-[2rem] border-2 border-dashed transition-all duration-500 cursor-pointer",
-                isUploading 
-                  ? "bg-slate-950/20 border-white/5 opacity-50" 
-                  : "bg-slate-950/40 border-white/10 hover:border-blue-500/40 hover:bg-blue-500/5 group"
-              )}
-            >
-              <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-slate-400 group-hover:scale-110 group-hover:text-blue-400 transition-all duration-500">
-                {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Upload className="w-8 h-8" />}
-              </div>
-              <div className="text-center">
-                <p className="text-white font-black uppercase tracking-widest text-sm mb-1">
-                  {isUploading ? 'Synchronizing Assets...' : 'Upload Executive Resume'}
-                </p>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-tighter">
-                  DOCX / TXT for AI Intelligence • PDF Supported (5MB)
-                </p>
-              </div>
-            </label>
+      <div className="surface-card-muted p-5 space-y-4">
+        <div className="section-header">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-slate-500 mb-1">Step 2 of 2</p>
+            <h3 className="text-base font-semibold text-white">Resume</h3>
+            <p className="text-sm text-slate-400">Upload a resume or choose one from your library.</p>
           </div>
+        </div>
 
-          {/* Selection Area */}
-          {resumes.length > 0 && (
-            <div className="space-y-4">
-              <p className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Asset Library</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {resumes.map((resume) => (
-                  <div key={resume.id} className="group/item relative">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedResumeId(resume.id)}
-                      className={cn(
-                        "w-full text-left p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden",
-                        selectedResumeId === resume.id 
-                          ? "bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-500/10" 
-                          : "bg-slate-950/40 border-white/5 hover:border-white/10"
-                      )}
-                    >
-                      <div className="flex items-center gap-4 relative z-10">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                          selectedResumeId === resume.id ? "bg-blue-500 text-white" : "bg-slate-900 text-slate-500"
-                        )}>
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-bold text-sm truncate">{resume.fileName}</p>
-                          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">
-                            {formatFileSize(resume.fileSize)} • {new Date(resume.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        {selectedResumeId === resume.id && (
-                          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                            <Check className="w-3 h-3" strokeWidth={3} />
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                    
-                    {resume.publicUrl && (
-                      <div className="absolute right-4 bottom-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                        <AnalyzeResumeButton
-                          resumeId={resume.id}
-                          fileName={resume.fileName}
-                          fileUrl={resume.publicUrl}
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 hover:bg-transparent"
-                        />
-                      </div>
-                    )}
+        <div className="flex items-center gap-3">
+          <Input
+            id="resume-upload"
+            type="file"
+            accept=".docx,.txt,.pdf"
+            onChange={handleFileUpload}
+            disabled={isUploading || isSubmitting}
+            className="bg-slate-950/60 border-white/10 text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-white"
+          />
+          {isUploading && <Loader2 className="w-4 h-4 animate-spin text-blue-300" />}
+        </div>
+
+        {!loadingResumes && resumes.length > 0 && (
+          <div className="space-y-2">
+            {resumes.map((resume) => (
+              <div
+                key={resume.id}
+                className={cn(
+                  'rounded-lg border px-3 py-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between',
+                  selectedResumeId === resume.id
+                    ? 'border-blue-500/40 bg-blue-500/10'
+                    : 'border-white/10 bg-slate-950/40'
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedResumeId(resume.id)}
+                  className="text-left flex items-center gap-3"
+                >
+                  <div className={cn('p-2 rounded-md', selectedResumeId === resume.id ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300')}>
+                    <FileText className="w-4 h-4" />
                   </div>
-                ))}
+                  <div>
+                    <p className="text-sm font-medium text-white">{resume.fileName}</p>
+                    <p className="text-xs text-slate-500">
+                      {formatFileSize(resume.fileSize)} • {new Date(resume.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {selectedResumeId === resume.id && <Check className="w-4 h-4 text-blue-300" />}
+                  {resume.publicUrl && (
+                    <AnalyzeResumeButton
+                      resumeId={resume.id}
+                      fileName={resume.fileName}
+                      fileUrl={resume.publicUrl}
+                      variant="ghost"
+                      size="sm"
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-3 text-sm text-blue-200">
+        <div className="flex items-start gap-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 text-blue-300" />
+          <p>
+            Your application is submitted securely. You can track status updates from your applications dashboard.
+          </p>
         </div>
       </div>
 
-      {/* Feedback & Submission */}
-      <div className="space-y-6">
-        {error && (
-          <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400 rounded-2xl animate-in fade-in slide-in-from-top-2">
-            <AlertDescription className="font-bold">{error}</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <div className="rounded-lg border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+          {error}
+        </div>
+      )}
 
-        {successMessage && (
-          <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] text-emerald-400 animate-in fade-in slide-in-from-bottom-2">
-             <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0">
-                  <Check className="w-5 h-5" strokeWidth={3} />
-                </div>
-                <pre className="whitespace-pre-wrap text-xs font-bold font-sans opacity-90 leading-relaxed">
-                  {successMessage}
-                </pre>
-             </div>
-          </div>
-        )}
+      {successMessage && (
+        <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
+          {successMessage}
+        </div>
+      )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !proposal.trim() || proposal.length < 50}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2rem] h-20 text-xl shadow-2xl shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <span>Initializing Submission...</span>
-            </>
-          ) : (
-            <>
-              <span>Submit Strategic Application</span>
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </>
-          )}
-        </button>
-        
-        <p className="text-center text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
-          End-to-End Encryption • Direct Professional Routing
-        </p>
-      </div>
-    </div>
+      <button
+        type="submit"
+        disabled={isSubmitting || !proposal.trim() || proposal.length < 50}
+        className="focus-ring w-full h-11 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold text-white flex items-center justify-center gap-2"
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Submitting Application...
+          </>
+        ) : (
+          <>
+            <Sparkles className="w-4 h-4" />
+            Submit Application
+          </>
+        )}
+      </button>
+    </form>
   )
 }
-

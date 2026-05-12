@@ -139,11 +139,14 @@ function getFallbackRecommendations(
   profile: UserProfile,
   jobs: Job[]
 ): RecommendationResponse {
-  const userTags = [...profile.skills, ...profile.interests];
+  const userTags = [...profile.skills, ...profile.interests]
+    .map((tag) => tag.trim())
+    .filter(Boolean);
   
   const scoredJobs = jobs.map(job => {
     let score = 0;
-    const highlights: string[] = [];
+    const highlights = new Set<string>();
+    const combinedText = `${job.title} ${job.description} ${job.requirements || ''}`.toLowerCase();
 
     // Match skills and interests
     const matchingTags = job.tags.filter(tag =>
@@ -154,35 +157,49 @@ function getFallbackRecommendations(
     );
 
     if (matchingTags.length > 0) {
-      score += (matchingTags.length / Math.max(job.tags.length, 1)) * 60;
-      highlights.push(`${matchingTags.length} matching skill${matchingTags.length > 1 ? 's' : ''}`);
+      score += (matchingTags.length / Math.max(job.tags.length, 1)) * 55;
+      highlights.add(`${matchingTags.length} matching skill${matchingTags.length > 1 ? 's' : ''}`);
     }
 
-    // Match keywords in description
-    const descLower = job.description.toLowerCase();
+    // Match keywords in title/description/requirements
     const bioLower = (profile.bio || '').toLowerCase();
     userTags.forEach(tag => {
-      if (descLower.includes(tag.toLowerCase())) {
-        score += 5;
+      const normalizedTag = tag.toLowerCase();
+      if (combinedText.includes(normalizedTag)) {
+        score += 4;
       }
-      if (bioLower && tag.toLowerCase().length > 3 && descLower.includes(tag.toLowerCase())) {
-        highlights.push(`Relevant experience in ${tag}`);
+      if (bioLower && normalizedTag.length > 3 && combinedText.includes(normalizedTag)) {
+        highlights.add(`Relevant experience in ${tag}`);
       }
     });
+
+    // Career-stage fit
+    if (profile.year) {
+      const isSeniorStage = /(senior|lead|principal|manager)/i.test(combinedText);
+      const isEarlyStage = /(intern|junior|entry|graduate)/i.test(combinedText);
+      if (isEarlyStage) score += 8;
+      if (isSeniorStage) score -= 5;
+    }
+
+    // Reward explicit requirement detail
+    if (job.requirements && job.requirements.trim().length > 30) {
+      score += 5;
+      highlights.add('Clear role requirements');
+    }
 
     // Department/Year bonus
     if (profile.department && job.tags.some(tag => 
       tag.toLowerCase().includes(profile.department!.toLowerCase())
     )) {
       score += 10;
-      highlights.push('Department match');
+      highlights.add('Department match');
     }
 
     return {
       jobId: job.id,
       score: Math.min(Math.round(score), 100),
       reasoning: `This position matches your profile with ${matchingTags.length} overlapping skills and relevant requirements.`,
-      matchHighlights: highlights.length > 0 ? highlights : ['General fit based on profile'],
+      matchHighlights: Array.from(highlights).slice(0, 3).length > 0 ? Array.from(highlights).slice(0, 3) : ['General fit based on profile'],
       growthPotential: 'Opportunity to expand your skills and gain valuable experience.',
     };
   });

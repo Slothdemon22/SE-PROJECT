@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react';
 import { Upload, User, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 
 interface AvatarUploadProps {
@@ -22,13 +21,13 @@ export function AvatarUpload({ currentUrl, onUpload }: AvatarUploadProps) {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.warning('Please select an image file');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      toast.warning('File size must be less than 5MB');
       return;
     }
 
@@ -70,9 +69,8 @@ export function AvatarUpload({ currentUrl, onUpload }: AvatarUploadProps) {
 
   return (
     <div className="flex items-center gap-6">
-      {/* Avatar Preview */}
       <div className="relative">
-        <div className="h-24 w-24 rounded-full overflow-hidden shadow-lg glass-card">
+        <div className="h-24 w-24 overflow-hidden rounded-xl border border-white/10 bg-slate-900">
           {previewUrl ? (
             <img
               src={previewUrl}
@@ -80,7 +78,7 @@ export function AvatarUpload({ currentUrl, onUpload }: AvatarUploadProps) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center" style={{ color: 'var(--foreground)', opacity: 0.4 }}>
+            <div className="h-full w-full flex items-center justify-center text-slate-500">
               <User className="h-12 w-12" />
             </div>
           )}
@@ -92,7 +90,6 @@ export function AvatarUpload({ currentUrl, onUpload }: AvatarUploadProps) {
         )}
       </div>
 
-      {/* Upload Button */}
       <div className="flex-1">
         <input
           ref={fileInputRef}
@@ -105,12 +102,12 @@ export function AvatarUpload({ currentUrl, onUpload }: AvatarUploadProps) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="glass-card px-4 py-2 flex items-center gap-2 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+          className="focus-ring inline-flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/60 px-4 py-2 text-sm text-slate-200 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Upload className="h-4 w-4" />
           {uploading ? 'Uploading...' : 'Upload Photo'}
         </button>
-        <p className="text-sm mt-2" style={{ color: 'var(--foreground)', opacity: 0.6 }}>
+        <p className="mt-2 text-sm text-slate-500">
           JPG, PNG or GIF • Max 5MB
         </p>
       </div>

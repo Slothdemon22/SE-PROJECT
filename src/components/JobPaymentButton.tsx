@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { CreditCard, Loader2, DollarSign, X } from 'lucide-react'
+import { CreditCard, Loader2, DollarSign, X, Sparkles, BadgeCheck } from 'lucide-react'
 
 interface JobPaymentButtonProps {
   jobId: string
@@ -22,6 +22,7 @@ export function JobPaymentButton({
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState(currentPaymentAmount?.toString() || '50')
   const [error, setError] = useState('')
+  const presetAmounts = [5, 10, 20, 50]
 
   if (isPaid) {
     return (
@@ -76,6 +77,12 @@ export function JobPaymentButton({
     }
   }
 
+  const handleAmountChange = (value: string) => {
+    const normalized = value.replace(/[^\d.]/g, '')
+    setPaymentAmount(normalized)
+    if (error) setError('')
+  }
+
   if (!showPaymentForm) {
     return (
       <Button
@@ -89,11 +96,17 @@ export function JobPaymentButton({
   }
 
   return (
-    <div className="glass-card p-6 space-y-4">
+    <div className="glass-card p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
-          Boost Your Job Posting
-        </h3>
+        <div>
+          <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+            <Sparkles className="w-4 h-4 text-blue-500" />
+            Boost Your Job Visibility
+          </h3>
+          <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
+            Promote this opportunity with Stripe-secured visibility boost.
+          </p>
+        </div>
         <button
           onClick={() => setShowPaymentForm(false)}
           className="p-1 hover:bg-gray-100 rounded"
@@ -102,28 +115,49 @@ export function JobPaymentButton({
         </button>
       </div>
 
-      <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-        Add a compensation amount to make your job posting more attractive to candidates.
-        This amount will be displayed prominently on your job listing.
-      </p>
+      <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-3">
+        <div className="flex items-start gap-2 text-sm text-blue-200">
+          <BadgeCheck className="w-4 h-4 mt-0.5 text-blue-300" />
+          <p>
+            Visibility boost helps your posting stand out in listing cards and increase applicant trust.
+          </p>
+        </div>
+      </div>
 
       <div>
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
           Compensation Amount (USD)
         </label>
-        <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: 'var(--foreground-muted)' }} />
+        <div className="flex items-center overflow-hidden rounded-lg border border-white/10 bg-slate-950/70">
+          <div className="flex h-10 items-center gap-1 border-r border-white/10 px-3 text-slate-400">
+            <DollarSign className="w-4 h-4" />
+            <span className="text-xs font-medium">USD</span>
+          </div>
           <Input
-            type="number"
+            type="text"
+            inputMode="decimal"
             min="5"
             max="10000"
             step="10"
             value={paymentAmount}
-            onChange={(e) => setPaymentAmount(e.target.value)}
-            className="pl-10 glass-input"
-            placeholder="50"
+            onChange={(e) => handleAmountChange(e.target.value)}
+            className="h-10 border-0 bg-transparent pl-3 text-white shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            placeholder="Enter amount"
             disabled={isLoading}
           />
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {presetAmounts.map((amount) => (
+            <button
+              key={amount}
+              type="button"
+              onClick={() => setPaymentAmount(String(amount))}
+              disabled={isLoading}
+              className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-slate-300 hover:bg-white/10"
+            >
+              ${amount}
+            </button>
+          ))}
         </div>
         <p className="text-xs mt-1" style={{ color: 'var(--foreground-muted)' }}>
           Minimum: $5 • Maximum: $10,000
@@ -149,6 +183,10 @@ export function JobPaymentButton({
             </ul>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+        Estimated highlight label: <span className="font-semibold">${paymentAmount || '0'} visibility boost</span>
       </div>
 
       <div className="flex gap-3">

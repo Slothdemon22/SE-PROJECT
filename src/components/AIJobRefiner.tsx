@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Loader2, Wand2, Copy, Check } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
 
 interface AIJobRefinerProps {
   role: string
@@ -34,11 +35,19 @@ export default function AIJobRefiner({
   type,
   onApply,
 }: AIJobRefinerProps) {
+  const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<RefineResult | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
 
   const refineJob = async (generateFromRole: boolean = false): Promise<void> => {
+    const normalizedRole = role.trim()
+
+    if (generateFromRole && !normalizedRole) {
+      toast.warning('Please enter a role title first (for example: Fullstack Engineer), then click Generate from Role.')
+      return
+    }
+
     setLoading(true)
     
     try {
@@ -46,7 +55,7 @@ export default function AIJobRefiner({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role,
+          role: normalizedRole,
           currentDescription,
           currentRequirements,
           duration,
@@ -57,14 +66,15 @@ export default function AIJobRefiner({
       })
 
       if (!response.ok) {
-        throw new Error('Failed to refine job posting')
+        const errorPayload = await response.json().catch(() => null) as { error?: string } | null
+        throw new Error(errorPayload?.error || 'Failed to refine job posting')
       }
 
       const data = await response.json()
       setResult(data)
     } catch (error) {
       console.error('Error:', error)
-      alert('Failed to refine job posting. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to refine job posting. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -75,8 +85,10 @@ export default function AIJobRefiner({
       await navigator.clipboard.writeText(text)
       setCopied(field)
       setTimeout(() => setCopied(null), 2000)
+      toast.success('Copied to clipboard')
     } catch (error) {
       console.error('Failed to copy:', error)
+      toast.error('Failed to copy content')
     }
   }
 

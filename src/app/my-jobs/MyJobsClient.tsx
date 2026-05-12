@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Job } from '@prisma/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/toast'
 import gsap from 'gsap'
 import {
   Calendar,
@@ -62,6 +63,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string }>
 
 export function MyJobsClient({ jobs }: MyJobsClientProps) {
   const router = useRouter()
+  const toast = useToast()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [resubmittingId, setResubmittingId] = useState<string | null>(null)
   const [publishingId, setPublishingId] = useState<string | null>(null)
@@ -93,9 +95,10 @@ export function MyJobsClient({ jobs }: MyJobsClientProps) {
         throw new Error('Failed to delete job')
       }
 
+      toast.success('Job deleted successfully')
       router.refresh()
     } catch (error) {
-      alert('Failed to delete job. Please try again.')
+      toast.error('Failed to delete job. Please try again.')
     } finally {
       setDeletingId(null)
     }
@@ -119,9 +122,9 @@ export function MyJobsClient({ jobs }: MyJobsClientProps) {
       }
 
       router.refresh()
-      alert('Job resubmitted for review!')
+      toast.success('Job resubmitted for review')
     } catch (error) {
-      alert('Failed to resubmit job. Please try again.')
+      toast.error('Failed to resubmit job. Please try again.')
     } finally {
       setResubmittingId(null)
     }
@@ -144,9 +147,10 @@ export function MyJobsClient({ jobs }: MyJobsClientProps) {
         throw new Error(data.error || 'Failed to update job')
       }
 
+      toast.success(currentlyPublished ? 'Job unpublished successfully' : 'Job published successfully')
       router.refresh()
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to update job. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to update job. Please try again.')
     } finally {
       setPublishingId(null)
     }
@@ -175,9 +179,9 @@ export function MyJobsClient({ jobs }: MyJobsClientProps) {
       }
 
       router.refresh()
-      alert(data.message)
+      toast.success(data.message || (currentlyFilled ? 'Job reopened successfully' : 'Job marked as filled'))
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to update job. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to update job. Please try again.')
     } finally {
       setFillingId(null)
     }

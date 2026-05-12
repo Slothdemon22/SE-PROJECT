@@ -14,7 +14,7 @@ interface Notification {
   createdAt: string;
 }
 
-export default function NotificationsPageClient(): JSX.Element {
+export default function NotificationsPageClient() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Sparkles, Loader2, TrendingUp } from 'lucide-react';
+import { useToast } from './ui/toast';
 
 interface CalculateMatchButtonProps {
   applicationId: string;
@@ -27,6 +28,7 @@ export default function CalculateMatchButton({
   variant = 'outline',
   size = 'default',
 }: CalculateMatchButtonProps): JSX.Element {
+  const toast = useToast();
   const [loading, setLoading] = useState<boolean>(false);
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
   const [analysis, setAnalysis] = useState<MatchAnalysis | null>(null);
@@ -57,10 +59,11 @@ export default function CalculateMatchButton({
         if (onScoreCalculated) {
           onScoreCalculated(data.matchScore);
         }
+        toast.success('Match analysis generated successfully');
       }
     } catch (error) {
       console.error('Error calculating match:', error);
-      alert('Failed to calculate match score. Please try again.');
+      toast.error('Failed to calculate match score. Please try again.');
     } finally {
       setLoading(false);
     }

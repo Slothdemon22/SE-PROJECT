@@ -2,22 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CallRequest, Job, Profile, Application } from '@prisma/client'
+import { CallRequest, Job, Profile } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Video,
-  Calendar,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  User,
-  Briefcase,
-  MessageSquare,
-} from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
+import { Video, Calendar, Clock, CheckCircle2, XCircle, Loader2, User, Briefcase, MessageSquare, Copy, ExternalLink } from 'lucide-react'
 
 interface CallRequestWithRelations extends CallRequest {
   job: Job & {
@@ -41,28 +32,22 @@ interface VideoCallsClientProps {
   currentUserId: string
 }
 
-const getStatusBadgeStyle = (status: string) => {
-  const styles: Record<string, { bg: string; text: string; border: string }> = {
-    PENDING: { bg: 'rgba(251, 191, 36, 0.2)', text: '#F59E0B', border: '#F59E0B' },
-    ACCEPTED: { bg: 'rgba(34, 197, 94, 0.2)', text: '#22C55E', border: '#22C55E' },
-    REJECTED: { bg: 'rgba(239, 68, 68, 0.2)', text: '#EF4444', border: '#EF4444' },
-    COMPLETED: { bg: 'rgba(107, 114, 128, 0.2)', text: '#6B7280', border: '#6B7280' },
-    CANCELLED: { bg: 'rgba(107, 114, 128, 0.2)', text: '#6B7280', border: '#6B7280' },
-  }
-  return styles[status] || styles.PENDING
+const STATUS_STYLES: Record<string, string> = {
+  PENDING: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+  ACCEPTED: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  REJECTED: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+  COMPLETED: 'bg-slate-500/10 text-slate-300 border-slate-500/20',
+  CANCELLED: 'bg-slate-500/10 text-slate-300 border-slate-500/20',
 }
 
-export function VideoCallsClient({
-  sentRequests: initialSent,
-  receivedRequests: initialReceived,
-  currentUserId
-}: VideoCallsClientProps) {
+export function VideoCallsClient({ sentRequests: initialSent, receivedRequests: initialReceived }: VideoCallsClientProps) {
   const router = useRouter()
-  const [sentRequests, setSentRequests] = useState(initialSent)
-  const [receivedRequests, setReceivedRequests] = useState(initialReceived)
+  const toast = useToast()
+  const [sentRequests] = useState(initialSent)
+  const [receivedRequests] = useState(initialReceived)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [scheduledTime, setScheduledTime] = useState('')
-  const [rejectReason, setRejectReason] = useState('')
+  const [scheduledTimes, setScheduledTimes] = useState<Record<string, string>>({})
+  const [rejectReasons, setRejectReasons] = useState<Record<string, string>>({})
   const [showRejectForm, setShowRejectForm] = useState<string | null>(null)
 
   const handleAccept = async (requestId: string) => {
@@ -71,7 +56,7 @@ export function VideoCallsClient({
       const response = await fetch(`/api/call-requests/${requestId}/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduledTime: scheduledTime || null }),
+        body: JSON.stringify({ scheduledTime: scheduledTimes[requestId] || null }),
       })
 
       if (!response.ok) {
@@ -79,12 +64,13 @@ export function VideoCallsClient({
         throw new Error(data.error || 'Failed to accept request')
       }
 
-      // Reload the page to show updated video call status
-      window.location.reload()
+      toast.success('Video call request accepted')
+      router.refresh()
+      setShowRejectForm(null)
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to accept request')
+      toast.error(error instanceof Error ? error.message : 'Failed to accept request')
+    } finally {
       setActionLoading(null)
-      setScheduledTime('')
     }
   }
 
@@ -94,7 +80,7 @@ export function VideoCallsClient({
       const response = await fetch(`/api/call-requests/${requestId}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rejectReason: rejectReason || null }),
+        body: JSON.stringify({ rejectReason: rejectReasons[requestId] || null }),
       })
 
       if (!response.ok) {
@@ -102,11 +88,11 @@ export function VideoCallsClient({
         throw new Error(data.error || 'Failed to reject request')
       }
 
+      toast.success('Video call request declined')
       router.refresh()
       setShowRejectForm(null)
-      setRejectReason('')
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to reject request')
+      toast.error(error instanceof Error ? error.message : 'Failed to reject request')
     } finally {
       setActionLoading(null)
     }
@@ -115,346 +101,169 @@ export function VideoCallsClient({
   const renderCallRequestCard = (request: CallRequestWithRelations, isSent: boolean) => {
     const otherUser = isSent ? request.receiver : request.requester
     const canJoin = request.status === 'ACCEPTED' && request.roomId
+    const callUrl = typeof window === 'undefined' ? `/video-call/${request.id}` : `${window.location.origin}/video-call/${request.id}`
 
     return (
-      <div key={request.id} className="glass-card p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
+      <article key={request.id} className="surface-card space-y-4 p-5 md:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             {otherUser.avatarUrl ? (
-              <img
-                src={otherUser.avatarUrl}
-                alt={otherUser.fullName || 'User'}
-                className="w-12 h-12 rounded-full object-cover"
-              />
+              <img src={otherUser.avatarUrl} alt={otherUser.fullName || 'User'} className="h-11 w-11 rounded-lg border border-white/10 object-cover" />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-slate-800">
+                <User className="h-5 w-5 text-slate-300" />
               </div>
             )}
-            <div>
-              <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>
-                {otherUser.fullName || 'Anonymous User'}
-              </h3>
-              <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-                {otherUser.department && otherUser.year
-                  ? `${otherUser.department} - ${otherUser.year}`
-                  : otherUser.email}
+            <div className="min-w-0">
+              <h3 className="truncate font-semibold text-white">{otherUser.fullName || 'Anonymous User'}</h3>
+              <p className="truncate text-sm text-slate-400">
+                {otherUser.department && otherUser.year ? `${otherUser.department} - ${otherUser.year}` : otherUser.email}
               </p>
             </div>
           </div>
-
-          <Badge 
-            style={{
-              background: getStatusBadgeStyle(request.status).bg,
-              color: getStatusBadgeStyle(request.status).text,
-              borderColor: getStatusBadgeStyle(request.status).border,
-            }}
-          >
-            {request.status}
-          </Badge>
+          <Badge className={STATUS_STYLES[request.status] || STATUS_STYLES.PENDING}>{request.status}</Badge>
         </div>
 
-        {/* Job Info */}
-        <div 
-          className="flex items-center gap-2 mb-4 p-3 rounded-lg border"
-          style={{
-            background: 'rgba(37, 99, 235, 0.1)',
-            borderColor: 'var(--border)',
-          }}
-        >
-          <Briefcase className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-          <span className="font-medium" style={{ color: 'var(--foreground)' }}>{request.job.title}</span>
+        <div className="surface-card-muted flex items-center gap-2 p-3">
+          <Briefcase className="h-4 w-4 shrink-0 text-slate-400" />
+          <span className="truncate text-sm text-slate-200">{request.job.title}</span>
         </div>
 
-        {/* Message */}
         {request.message && (
-          <div 
-            className="mb-4 p-3 rounded-lg border"
-            style={{
-              background: 'rgba(0, 0, 0, 0.05)',
-              borderColor: 'var(--border)',
-            }}
-          >
+          <div className="surface-card-muted p-3">
+            <p className="mb-1 text-xs uppercase tracking-wide text-slate-500">Message</p>
             <div className="flex items-start gap-2">
-              <MessageSquare className="w-4 h-4 mt-1" style={{ color: 'var(--foreground-muted)' }} />
-              <p className="text-sm" style={{ color: 'var(--foreground)' }}>
-                {request.message}
-              </p>
+              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+              <p className="text-sm text-slate-300">{request.message}</p>
             </div>
           </div>
         )}
 
-        {/* Time Info */}
-        <div className="space-y-2 mb-4 text-sm" style={{ color: 'var(--foreground-muted)' }}>
+        <div className="grid gap-2 text-sm text-slate-400">
           {request.requestedTime && (
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span>Requested: {new Date(request.requestedTime).toLocaleString()}</span>
-            </div>
+            <p className="inline-flex items-center gap-2"><Calendar className="h-4 w-4" />Preferred: {new Date(request.requestedTime).toLocaleString()}</p>
           )}
           {request.scheduledTime && (
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" style={{ color: '#22C55E' }} />
-              <span className="font-medium" style={{ color: '#22C55E' }}>
-                Scheduled: {new Date(request.scheduledTime).toLocaleString()}
-              </span>
-            </div>
+            <p className="inline-flex items-center gap-2 text-emerald-300"><Clock className="h-4 w-4" />Scheduled: {new Date(request.scheduledTime).toLocaleString()}</p>
           )}
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span>Requested: {new Date(request.createdAt).toLocaleString()}</span>
-          </div>
+          <p className="inline-flex items-center gap-2"><Clock className="h-4 w-4" />Requested: {new Date(request.createdAt).toLocaleString()}</p>
         </div>
 
-        {/* Actions */}
         {!isSent && request.status === 'PENDING' && (
-          <div className="space-y-3">
-            {/* Accept with optional scheduled time */}
-            <div className="space-y-2">
-              <Input
-                type="datetime-local"
-                value={scheduledTime}
-                onChange={(e) => setScheduledTime(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
-                className="glass-input"
-                placeholder="Set scheduled time (optional)"
-                style={{
-                  background: 'var(--background)',
-                  borderColor: 'var(--border)',
-                  color: 'var(--foreground)',
-                }}
-              />
-              <Button
-                onClick={() => handleAccept(request.id)}
-                disabled={actionLoading === request.id}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-              >
-                {actionLoading === request.id ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Accepting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Accept Video Call Request
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="space-y-3 border-t border-white/10 pt-2">
+            <Input
+              type="datetime-local"
+              value={scheduledTimes[request.id] || ''}
+              onChange={(e) => setScheduledTimes((prev) => ({ ...prev, [request.id]: e.target.value }))}
+              min={new Date().toISOString().slice(0, 16)}
+              className="border-white/10 bg-slate-950/60 text-white"
+            />
+            <Button onClick={() => handleAccept(request.id)} disabled={actionLoading === request.id} className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
+              {actionLoading === request.id ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Accepting...</> : <><CheckCircle2 className="mr-2 h-4 w-4" />Accept Request</>}
+            </Button>
 
-            {/* Reject */}
             {showRejectForm === request.id ? (
               <div className="space-y-2">
                 <textarea
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  className="glass-input w-full min-h-[80px]"
-                  placeholder="Optional: Reason for declining (will be sent to applicant)"
-                  style={{
-                    background: 'var(--background)',
-                    borderColor: 'var(--border)',
-                    color: 'var(--foreground)',
-                  }}
+                  value={rejectReasons[request.id] || ''}
+                  onChange={(e) => setRejectReasons((prev) => ({ ...prev, [request.id]: e.target.value }))}
+                  className="min-h-[88px] w-full rounded-lg border border-white/10 bg-slate-950/60 p-3 text-sm text-white"
+                  placeholder="Optional reason for decline"
                 />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleReject(request.id)}
-                    disabled={actionLoading === request.id}
-                    variant="destructive"
-                    className="flex-1"
-                  >
-                    {actionLoading === request.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Declining...
-                      </>
-                    ) : (
-                      'Confirm Decline'
-                    )}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button onClick={() => handleReject(request.id)} disabled={actionLoading === request.id} variant="destructive">
+                    {actionLoading === request.id ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Declining...</> : 'Confirm Decline'}
                   </Button>
-                  <Button
-                    onClick={() => {
-                      setShowRejectForm(null)
-                      setRejectReason('')
-                    }}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
+                  <Button onClick={() => setShowRejectForm(null)} variant="outline" className="border-white/10 text-slate-200 hover:bg-white/5">Cancel</Button>
                 </div>
               </div>
             ) : (
-              <Button
-                onClick={() => setShowRejectForm(request.id)}
-                variant="outline"
-                className="w-full border-red-300 text-red-600 hover:bg-red-50"
-              >
-                <XCircle className="w-4 h-4 mr-2" />
-                Decline Request
+              <Button onClick={() => setShowRejectForm(request.id)} variant="outline" className="w-full border-rose-500/30 text-rose-300 hover:bg-rose-500/10">
+                <XCircle className="mr-2 h-4 w-4" />Decline Request
               </Button>
             )}
           </div>
         )}
 
         {canJoin && (
-          <div className="space-y-3">
-            {/* Video Call Link Display */}
-            <div 
-              className="p-4 rounded-lg border-2"
-              style={{
-                background: 'rgba(34, 197, 94, 0.1)',
-                borderColor: '#22C55E',
-              }}
-            >
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: '#22C55E' }}>
-                <Video className="w-4 h-4" />
-                Video Call Ready
-              </h4>
-              <p className="text-xs mb-3" style={{ color: 'var(--foreground-muted)' }}>
-                Share this link or click the button below to join:
-              </p>
+          <div className="space-y-3 border-t border-white/10 pt-2">
+            <div className="surface-card-muted space-y-2 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Video Link</p>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={(() => {
-                    if (typeof window === 'undefined') return `/video-call/${request.id}`
-                    return `${window.location.origin}/video-call/${request.id}`
-                  })()}
+                  value={callUrl}
                   readOnly
-                  className="flex-1 px-3 py-2 text-sm rounded font-mono"
-                  onClick={(e) => e.currentTarget.select()}
                   suppressHydrationWarning
-                  style={{
-                    background: 'var(--background)',
-                    borderColor: 'var(--border)',
-                    color: 'var(--foreground)',
-                  }}
+                  className="flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 font-mono text-xs text-slate-200"
+                  onClick={(e) => e.currentTarget.select()}
                 />
                 <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/video-call/${request.id}`)
-                    alert('Link copied to clipboard!')
-                  }}
+                  type="button"
                   variant="outline"
                   size="sm"
-                  className="shrink-0"
+                  className="border-white/10 text-slate-200 hover:bg-white/5"
+                  onClick={() => {
+                    navigator.clipboard.writeText(callUrl)
+                    toast.success('Link copied to clipboard')
+                  }}
                 >
-                  Copy
+                  <Copy className="mr-1 h-3.5 w-3.5" />Copy
                 </Button>
               </div>
             </div>
-            
-            <Button
-              onClick={() => {
-                const url = `/video-call/${request.id}`
-                window.open(url, '_blank', 'noopener,noreferrer')
-              }}
-              className="w-full btn-gradient"
-            >
-              <Video className="w-4 h-4 mr-2" />
-              Join Video Call Now
+            <Button onClick={() => window.open(`/video-call/${request.id}`, '_blank', 'noopener,noreferrer')} className="w-full bg-blue-600 text-white hover:bg-blue-700">
+              <Video className="mr-2 h-4 w-4" />Join Video Call<ExternalLink className="ml-2 h-4 w-4" />
             </Button>
           </div>
         )}
 
         {request.status === 'REJECTED' && request.rejectReason && (
-          <div 
-            className="p-3 rounded-lg border text-sm"
-            style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              borderColor: '#EF4444',
-              color: '#EF4444',
-            }}
-          >
+          <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300">
             <strong>Decline reason:</strong> {request.rejectReason}
           </div>
         )}
-      </div>
+      </article>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
-            Video Interview Requests
-          </h1>
-          <p className="mt-2" style={{ color: 'var(--foreground-muted)' }}>
-            Manage your video call interview requests
-          </p>
-        </div>
+    <div className="page-shell max-w-[1240px] space-y-6 text-slate-100">
+      <div className="space-y-2 text-center">
+        <h1 className="text-4xl font-semibold text-white md:text-5xl">Video Interview Requests</h1>
+        <p className="text-slate-400">Review requests, schedule interviews, and join calls quickly.</p>
       </div>
 
-      {/* Tabs */}
       <Tabs defaultValue="received" className="w-full">
-        <TabsList 
-          className="grid w-full grid-cols-2"
-          style={{
-            background: 'var(--card)',
-            borderColor: 'var(--border)',
-          }}
-        >
-          <TabsTrigger 
-            value="received"
-            style={{
-              color: 'var(--foreground)',
-            }}
-          >
-            Received ({receivedRequests.length})
-          </TabsTrigger>
-          <TabsTrigger 
-            value="sent"
-            style={{
-              color: 'var(--foreground)',
-            }}
-          >
-            Sent ({sentRequests.length})
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 border border-white/10 bg-slate-900/70">
+          <TabsTrigger value="received">Received ({receivedRequests.length})</TabsTrigger>
+          <TabsTrigger value="sent">Sent ({sentRequests.length})</TabsTrigger>
         </TabsList>
 
-        {/* Received Requests */}
         <TabsContent value="received" className="mt-6">
           {receivedRequests.length === 0 ? (
-            <div className="glass-card p-12 text-center">
-              <Video className="w-16 h-16 mx-auto mb-4 opacity-50" style={{ color: 'var(--foreground-muted)' }} />
-              <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-                No Received Requests
-              </h3>
-              <p style={{ color: 'var(--foreground-muted)' }}>
-                When candidates request video interviews, they'll appear here
-              </p>
+            <div className="surface-card p-12 text-center">
+              <Video className="mx-auto mb-3 h-10 w-10 text-slate-500" />
+              <h3 className="text-xl font-semibold text-white">No received requests</h3>
+              <p className="mt-1 text-slate-400">When candidates request interviews, they will appear here.</p>
             </div>
           ) : (
-            <div className="grid gap-6">
-              {receivedRequests.map(request => renderCallRequestCard(request, false))}
-            </div>
+            <div className="grid gap-4">{receivedRequests.map((request) => renderCallRequestCard(request, false))}</div>
           )}
         </TabsContent>
 
-        {/* Sent Requests */}
         <TabsContent value="sent" className="mt-6">
           {sentRequests.length === 0 ? (
-            <div className="glass-card p-12 text-center">
-              <Video className="w-16 h-16 mx-auto mb-4 opacity-50" style={{ color: 'var(--foreground-muted)' }} />
-              <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
-                No Sent Requests
-              </h3>
-              <p style={{ color: 'var(--foreground-muted)' }}>
-                Request video interviews from job detail pages
-              </p>
+            <div className="surface-card p-12 text-center">
+              <Video className="mx-auto mb-3 h-10 w-10 text-slate-500" />
+              <h3 className="text-xl font-semibold text-white">No sent requests</h3>
+              <p className="mt-1 text-slate-400">You can request interviews from job detail pages.</p>
             </div>
           ) : (
-            <div className="grid gap-6">
-              {sentRequests.map(request => renderCallRequestCard(request, true))}
-            </div>
+            <div className="grid gap-4">{sentRequests.map((request) => renderCallRequestCard(request, true))}</div>
           )}
         </TabsContent>
       </Tabs>
     </div>
   )
 }
-

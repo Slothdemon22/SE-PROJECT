@@ -13,20 +13,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const body = await request.json();
     const { role, currentDescription, currentRequirements, duration, compensation, type, generateFromRole } = body;
+    const normalizedRole = typeof role === 'string' ? role.trim() : '';
 
-    if (!role) {
-      return NextResponse.json({ error: 'Role is required' }, { status: 400 });
+    if (!normalizedRole) {
+      return NextResponse.json({ error: 'Role is required. Enter a role title before using AI generation.' }, { status: 400 });
     }
 
     let result;
     
     if (generateFromRole) {
       // Generate complete job posting from just role name
-      result = await generateJobFromRole(role, type);
+      result = await generateJobFromRole(normalizedRole, type);
     } else {
       // Refine existing job posting
       result = await refineJobWithAI({
-        role,
+        role: normalizedRole,
         currentDescription,
         currentRequirements,
         duration,

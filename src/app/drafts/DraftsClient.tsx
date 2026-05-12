@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Job } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/components/ui/toast'
 import gsap from 'gsap'
 import {
   FileText,
@@ -28,6 +29,7 @@ const JOB_TYPE_LABELS: Record<string, string> = {
 
 export function DraftsClient({ drafts }: DraftsClientProps) {
   const router = useRouter()
+  const toast = useToast()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [publishingId, setPublishingId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -57,9 +59,10 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
         throw new Error('Failed to delete draft')
       }
 
+      toast.success('Draft deleted successfully')
       router.refresh()
     } catch (error) {
-      alert('Failed to delete draft. Please try again.')
+      toast.error('Failed to delete draft. Please try again.')
     } finally {
       setDeletingId(null)
     }
@@ -86,9 +89,9 @@ export function DraftsClient({ drafts }: DraftsClientProps) {
       }
 
       router.refresh()
-      alert('Draft published and sent for approval!')
+      toast.success('Draft published and sent for approval')
     } catch (error) {
-      alert('Failed to publish draft. Please try again.')
+      toast.error('Failed to publish draft. Please try again.')
     } finally {
       setPublishingId(null)
     }

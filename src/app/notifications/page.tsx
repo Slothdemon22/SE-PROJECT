@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import NotificationsPageClient from './NotificationsPageClient';
 
-export default async function NotificationsPage(): Promise<JSX.Element> {
+export default async function NotificationsPage() {
   const supabase = await createClient();
 
   const {

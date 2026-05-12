@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { uploadResume } from '@/lib/storage/resumes'
+import { STORAGE_BUCKET_NAME } from '@/lib/storage/bucket'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = [
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ 
       resume,
       message: 'Resume uploaded successfully to Supabase Storage',
-      storageLocation: `Bucket: umt-surge-bucket/applicant-docs, Path: ${uploadResult.storagePath}`
+      storageLocation: `Bucket: ${STORAGE_BUCKET_NAME}/applicant-docs, Path: ${uploadResult.storagePath}`
     }, { status: 201 })
 
   } catch (error) {

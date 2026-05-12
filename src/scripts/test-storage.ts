@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
+import { STORAGE_BUCKET_NAME } from '../lib/storage/bucket'
 
 // Load environment variables
 dotenv.config()
@@ -34,16 +35,16 @@ async function testStorage() {
     })
     
     // Test 2: Check if bucket exists
-    console.log('\n📋 Test 2: Checking for "umt-surge-bucket" bucket...')
-    const resumesBucket = buckets?.find(b => b.name === 'umt-surge-bucket')
+    console.log(`\n📋 Test 2: Checking for "${STORAGE_BUCKET_NAME}" bucket...`)
+    const resumesBucket = buckets?.find(b => b.name === STORAGE_BUCKET_NAME)
     
     if (!resumesBucket) {
-      console.log('❌ "umt-surge-bucket" bucket not found!')
+      console.log(`❌ "${STORAGE_BUCKET_NAME}" bucket not found!`)
       console.log('   Please create it in your Supabase dashboard')
       return
     }
     
-    console.log('✅ "umt-surge-bucket" bucket exists')
+    console.log(`✅ "${STORAGE_BUCKET_NAME}" bucket exists`)
     console.log(`   Public: ${resumesBucket.public ? 'Yes' : 'No'}`)
     
     // Test 3: Create a test file and upload it
@@ -53,7 +54,7 @@ async function testStorage() {
     const testPath = `applicant-docs/test-user/${testFileName}`
     
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('umt-surge-bucket')
+      .from(STORAGE_BUCKET_NAME)
       .upload(testPath, Buffer.from(testContent), {
         contentType: 'text/plain',
         upsert: false
@@ -69,7 +70,7 @@ async function testStorage() {
     // Test 4: Get public URL
     console.log('\n📋 Test 4: Getting public URL...')
     const { data: urlData } = supabase.storage
-      .from('umt-surge-bucket')
+      .from(STORAGE_BUCKET_NAME)
       .getPublicUrl(testPath)
     
     console.log('✅ Public URL generated:')
@@ -78,7 +79,7 @@ async function testStorage() {
     // Test 5: Clean up - delete test file
     console.log('\n📋 Test 5: Cleaning up test file...')
     const { error: deleteError } = await supabase.storage
-      .from('umt-surge-bucket')
+      .from(STORAGE_BUCKET_NAME)
       .remove([testPath])
     
     if (deleteError) {
@@ -92,13 +93,13 @@ async function testStorage() {
     console.log('='.repeat(60))
     console.log('\n📝 What this means:')
     console.log('✅ Your Supabase connection is working')
-    console.log('✅ The "umt-surge-bucket" exists and is accessible')
+    console.log(`✅ The "${STORAGE_BUCKET_NAME}" exists and is accessible`)
     console.log('✅ File uploads are working')
     console.log('✅ Public URLs are being generated')
     console.log('✅ File deletions are working')
     console.log('\n🚀 You can now upload resumes through the application!')
     console.log('\n📍 Files will be stored at:')
-    console.log(`   Bucket: umt-surge-bucket`)
+    console.log(`   Bucket: ${STORAGE_BUCKET_NAME}`)
     console.log(`   Folder: applicant-docs`)
     console.log(`   Format: applicant-docs/{userId}/{resumeId}-{timestamp}.{ext}`)
     

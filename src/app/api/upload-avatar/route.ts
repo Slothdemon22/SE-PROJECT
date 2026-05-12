@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { uploadAvatar } from '@/lib/storage/avatars';
+import { STORAGE_BUCKET_NAME } from '@/lib/storage/bucket';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +11,9 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error('Avatar upload auth failed:', {
+        message: authError?.message || 'No authenticated user',
+      })
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -21,11 +25,13 @@ export async function POST(request: NextRequest) {
       where: { userId: user.id }
     });
 
+    // During signup/create-profile flow, profile may not exist yet.
+    // Fall back to auth user id so avatar upload still works.
+    const storageOwnerId = profile?.id || user.id
     if (!profile) {
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      );
+      console.warn('Avatar upload: profile not found, using auth user id fallback', {
+        userId: user.id,
+      })
     }
 
     const formData = await request.formData();
@@ -57,9 +63,16 @@ export async function POST(request: NextRequest) {
     // Upload to Supabase Storage using the same pattern as resumes
     let uploadResult
     try {
-      uploadResult = await uploadAvatar(file, profile.id)
+      uploadResult = await uploadAvatar(file, storageOwnerId)
     } catch (error) {
-      console.error('Storage upload error:', error)
+      console.error('Avatar storage upload error:', {
+        userId: user.id,
+        storageOwnerId,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        error: error instanceof Error ? error.message : error,
+      })
       return NextResponse.json({ 
         error: 'Failed to upload file to storage. Please try again.',
         details: error instanceof Error ? error.message : 'Unknown error'
@@ -70,11 +83,11 @@ export async function POST(request: NextRequest) {
       url: uploadResult.publicUrl,
       storagePath: uploadResult.storagePath,
       message: 'Avatar uploaded successfully to Supabase Storage',
-      storageLocation: `Bucket: umt-surge-bucket/avatars, Path: ${uploadResult.storagePath}`
+      storageLocation: `Bucket: ${STORAGE_BUCKET_NAME}/avatars, Path: ${uploadResult.storagePath}`
     });
 
   } catch (error) {
-    console.error('Avatar upload error:', error);
+    console.error('Avatar upload route error:', error);
     return NextResponse.json(
       { error: 'Failed to upload avatar', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

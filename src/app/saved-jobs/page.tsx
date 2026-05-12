@@ -55,7 +55,7 @@ export default async function SavedJobsPage() {
     <div className="min-h-screen bg-slate-950">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1320px] px-4 pt-16 pb-10 sm:px-6 lg:px-8">
         <SavedJobsClient bookmarks={bookmarks} currentUserId={profile.id} />
       </main>
     </div>

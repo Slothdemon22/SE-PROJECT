@@ -22,6 +22,18 @@ export function LoginForm() {
     setLoading(true)
 
     try {
+      const hardcodedAdminRes = await fetch('/api/admin/hardcoded-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (hardcodedAdminRes.ok) {
+        router.push('/admin')
+        router.refresh()
+        return
+      }
+
       const { error, data: authData } = await supabase.auth.signInWithPassword({
         email,
         password,

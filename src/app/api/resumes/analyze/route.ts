@@ -42,7 +42,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Parse resume to extract text
     console.log(`Parsing resume: ${file.name} (${file.type})`);
-    const parseResult = await parseResume(buffer, file.type);
+    const parseResult = await parseResume(buffer, file.type, file.name);
 
     if (!parseResult.text || parseResult.text.trim().length < 50) {
       return NextResponse.json(

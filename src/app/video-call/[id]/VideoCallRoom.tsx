@@ -252,7 +252,7 @@ export function VideoCallRoom({
                     <video
                       ref={(videoEl) => {
                         if (videoEl && peer.videoTrack) {
-                          hmsActions.attachVideo(peer.videoTrack.id, videoEl)
+                          hmsActions.attachVideo(peer.videoTrack, videoEl)
                         }
                       }}
                       autoPlay

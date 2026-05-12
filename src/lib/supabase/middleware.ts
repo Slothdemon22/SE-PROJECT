@@ -1,10 +1,17 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  ADMIN_BYPASS_COOKIE,
+  isValidAdminBypassCookie,
+} from '@/lib/admin/hardcoded-auth'
 
-// Admin emails list - must match the one in src/lib/admin/config.ts
+// Admin emails list - keep in sync with src/lib/admin/config.ts
 const ADMIN_EMAILS = [
   'admin@campusconnect.com',
+  process.env.ADMIN_EMAIL || '',
 ]
+  .map((email) => email.toLowerCase().trim())
+  .filter(Boolean)
 
 function isAdminEmail(email: string | null | undefined): boolean {
   if (!email) return false
@@ -46,6 +53,9 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const hasAdminBypass = isValidAdminBypassCookie(
+    request.cookies.get(ADMIN_BYPASS_COOKIE)?.value
+  )
 
   // Protected routes check
   if (
@@ -54,7 +64,7 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith('/profile') ||
       request.nextUrl.pathname.startsWith('/files') ||
       request.nextUrl.pathname.startsWith('/messages') ||
-      request.nextUrl.pathname.startsWith('/admin'))
+      (request.nextUrl.pathname.startsWith('/admin') && !hasAdminBypass))
   ) {
     // No user, redirect to login
     const url = request.nextUrl.clone()
@@ -65,11 +75,18 @@ export async function updateSession(request: NextRequest) {
 
   // Admin routes check - using email-based check (same as dashboard)
   if (user && request.nextUrl.pathname.startsWith('/admin')) {
-    if (!isAdminEmail(user.email)) {
+    if (!isAdminEmail(user.email) && !hasAdminBypass) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
+  }
+
+  if (!user && request.nextUrl.pathname.startsWith('/admin') && !hasAdminBypass) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirectTo', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
   }
 
   // If user is logged in and tries to access auth pages, redirect to dashboard

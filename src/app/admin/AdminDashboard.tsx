@@ -464,7 +464,7 @@ export function AdminDashboard({ userId }: AdminDashboardProps) {
                             size="sm"
                             onClick={() => {
                               if (!rejectionReason[job.id]?.trim()) {
-                                alert('Please provide a rejection reason')
+                                toast.warning('Please provide a rejection reason')
                                 return
                               }
                               handleJobAction(job.id, 'reject')

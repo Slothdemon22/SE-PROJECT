@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { isAdminEmail } from '@/lib/admin/config';
+import { ADMIN_BYPASS_COOKIE, isValidAdminBypassCookie } from '@/lib/admin/hardcoded-auth';
 
 interface UserStats {
   totalJobs: number;
@@ -27,11 +28,14 @@ interface UserWithStats {
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
+    const hasAdminBypass = isValidAdminBypassCookie(
+      request.cookies.get(ADMIN_BYPASS_COOKIE)?.value
+    );
     const supabase = await createClient();
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if ((authError || !user) && !hasAdminBypass) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -39,7 +43,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if user is admin using hardcoded email list
-    if (!isAdminEmail(user.email)) {
+    if (!hasAdminBypass && !isAdminEmail(user?.email)) {
       return NextResponse.json(
         { error: 'Forbidden: Admin access required' },
         { status: 403 }

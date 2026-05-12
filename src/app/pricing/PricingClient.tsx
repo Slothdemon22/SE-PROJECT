@@ -165,7 +165,7 @@ export function PricingClient({ user }: PricingClientProps) {
                     : ''
                 }`}
                 variant={plan.popular ? 'default' : 'outline'}
-                onClick={() => handleSubscribe(plan.priceId, plan.name)}
+                onClick={() => handleSubscribe(plan.priceId ?? null, plan.name)}
                 disabled={loading === plan.name}
               >
                 {loading === plan.name ? (

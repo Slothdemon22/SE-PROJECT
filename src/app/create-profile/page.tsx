@@ -28,33 +28,15 @@ export default async function CreateProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{
-            background: 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            Welcome to CampusConnect
-          </h1>
-          <p className="text-lg" style={{ color: 'var(--foreground-muted)' }}>
-            Let's create your profile and connect you with opportunities
-          </p>
-        </div>
-
-        {/* Form Card with Glassmorphic Design */}
-        <div className="glass-card p-8 md:p-10">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <main className="page-shell max-w-5xl">
+        <div className="surface-card p-6 md:p-8">
           <CreateProfileForm user={user} />
         </div>
-
-        {/* Footer Text */}
-        <p className="text-center text-sm mt-6" style={{ color: 'var(--foreground-muted)' }}>
-          Your information is secure and will only be visible to relevant connections
+        <p className="mt-5 text-center text-sm text-slate-500">
+          Your information is secure and only shown where relevant.
         </p>
-      </div>
+      </main>
     </div>
   );
 }

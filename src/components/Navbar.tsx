@@ -79,6 +79,21 @@ export function Navbar() {
     }
   }
 
+  const userAvatarUrl =
+    profile?.avatarUrl ||
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    null
+
+  const displayName =
+    profile?.fullName?.trim() ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split('@')[0] ||
+    'User'
+
+  const fallbackInitial = displayName.charAt(0).toUpperCase()
+
   const NavLink = ({ href, children, icon: Icon, onClick }: {
     href: string;
     children: React.ReactNode;
@@ -410,15 +425,15 @@ export function Navbar() {
                         e.currentTarget.style.setProperty('background-color', 'transparent', 'important')
                       }}
                     >
-                      {profile?.avatarUrl ? (
+                      {userAvatarUrl ? (
                         <img 
-                          src={profile.avatarUrl} 
+                          src={userAvatarUrl} 
                           alt="Avatar" 
                           className="w-8 h-8 rounded-full object-cover border border-[#1E3A8A]" 
                         />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
-                          {user.email?.[0].toUpperCase()}
+                          {fallbackInitial}
                         </div>
                       )}
                       <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--foreground-muted)' }} />
@@ -465,7 +480,15 @@ export function Navbar() {
                               e.currentTarget.style.setProperty('color', 'var(--foreground)', 'important')
                             }}
                           >
-                            <User className="w-4 h-4" />
+                            {userAvatarUrl ? (
+                              <img
+                                src={userAvatarUrl}
+                                alt="Profile avatar"
+                                className="h-4 w-4 rounded-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-4 h-4" />
+                            )}
                             Profile
                           </Link>
 
@@ -559,15 +582,15 @@ export function Navbar() {
             {/* User Info Section */}
             <div className="px-4 py-3 mb-2 rounded-xl" style={{ background: 'rgba(30, 58, 138, 0.05)' }}>
               <div className="flex items-center gap-3 mb-2">
-                {profile?.avatarUrl ? (
+                {userAvatarUrl ? (
                   <img 
-                    src={profile.avatarUrl} 
+                    src={userAvatarUrl} 
                     alt="Avatar" 
                     className="w-10 h-10 rounded-full object-cover border border-[#1E3A8A]" 
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#1E3A8A] to-blue-600 flex items-center justify-center text-white font-bold">
-                    {user.email?.[0].toUpperCase()}
+                    {fallbackInitial}
                   </div>
                 )}
                 <div className="flex-1">
@@ -679,10 +702,21 @@ export function Navbar() {
 
               <NavLink
                 href="/profile"
-                icon={User}
+                icon={undefined}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Profile
+                <span className="inline-flex items-center gap-2">
+                  {userAvatarUrl ? (
+                    <img
+                      src={userAvatarUrl}
+                      alt="Profile avatar"
+                      className="h-4 w-4 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-4 h-4" />
+                  )}
+                  Profile
+                </span>
               </NavLink>
 
               {isAdmin && (

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
@@ -36,6 +35,7 @@ const SUGGESTED_INTERESTS = [
 
 export function InterestsInput({ interests, onChange }: InterestsInputProps) {
   const [inputValue, setInputValue] = useState('');
+  const [inlineError, setInlineError] = useState('');
 
   const addInterest = (interest: string) => {
     const trimmedInterest = interest.trim();
@@ -43,22 +43,23 @@ export function InterestsInput({ interests, onChange }: InterestsInputProps) {
     if (!trimmedInterest) return;
     
     if (trimmedInterest.length > 50) {
-      alert('Interest name too long (max 50 characters)');
+      setInlineError('Interest is too long (max 50 characters).');
       return;
     }
     
     if (interests.length >= 20) {
-      alert('Maximum 20 interests allowed');
+      setInlineError('Maximum 20 interests allowed.');
       return;
     }
     
     if (interests.includes(trimmedInterest)) {
-      alert('This interest already exists');
+      setInlineError('This interest already exists.');
       return;
     }
     
     onChange([...interests, trimmedInterest]);
     setInputValue('');
+    setInlineError('');
   };
 
   const removeInterest = (interestToRemove: string) => {
@@ -81,35 +82,36 @@ export function InterestsInput({ interests, onChange }: InterestsInputProps) {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Add an interest (e.g., Startups, AI, Game Dev...)"
-          className="glass-input"
+          className="bg-slate-950/60 border-white/10 text-white"
           maxLength={50}
         />
         <button
           type="button"
           onClick={() => addInterest(inputValue)}
-          className="btn-gradient px-4"
+          className="px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
         >
           <Plus className="h-4 w-4" />
         </button>
       </div>
 
+      {inlineError && (
+        <p className="text-xs text-amber-300">{inlineError}</p>
+      )}
+
       {/* Selected Interests */}
       {interests.length > 0 && (
-        <div className="glass-card flex flex-wrap gap-2 p-4" style={{ 
-          background: 'rgba(139, 92, 246, 0.05)',
-          borderColor: 'rgba(139, 92, 246, 0.2)'
-        }}>
+        <div className="surface-card-muted flex flex-wrap gap-2 p-4">
           {interests.map((interest) => (
             <Badge
               key={interest}
               variant="secondary"
-              className="px-3 py-1.5 text-sm flex items-center gap-2 glass-card"
+              className="px-3 py-1.5 text-sm flex items-center gap-2 border border-indigo-500/20 bg-indigo-500/10 text-indigo-300"
             >
               {interest}
               <button
                 type="button"
                 onClick={() => removeInterest(interest)}
-                className="hover:text-red-600 transition-colors"
+                className="hover:text-rose-300 transition-colors"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -120,7 +122,7 @@ export function InterestsInput({ interests, onChange }: InterestsInputProps) {
 
       {/* Suggested Interests */}
       <div>
-        <p className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
+        <p className="text-sm font-medium mb-2 text-slate-200">
           Popular Interests (click to add):
         </p>
         <div className="flex flex-wrap gap-2">
@@ -129,13 +131,7 @@ export function InterestsInput({ interests, onChange }: InterestsInputProps) {
               key={interest}
               type="button"
               onClick={() => addInterest(interest)}
-              className="px-3 py-1.5 text-sm rounded-full transition-all hover:scale-105"
-              style={{
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                color: 'var(--foreground)',
-                backdropFilter: 'blur(8px)'
-              }}
+              className="px-3 py-1.5 text-sm rounded-full transition-colors border border-white/10 bg-slate-950/60 text-slate-200 hover:bg-white/5"
             >
               + {interest}
             </button>
@@ -143,7 +139,7 @@ export function InterestsInput({ interests, onChange }: InterestsInputProps) {
         </div>
       </div>
 
-      <p className="text-sm" style={{ color: 'var(--foreground)', opacity: 0.6 }}>
+      <p className="text-sm text-slate-500">
         Added {interests.length}/20 interest{interests.length !== 1 ? 's' : ''} • These help us recommend relevant opportunities
       </p>
     </div>

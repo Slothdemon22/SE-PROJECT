@@ -32,7 +32,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log(`📧 Starting comprehensive email test to: ${recipientEmail}`)
 
-    const results: Record<string, { success: boolean; messageId?: string | null; error?: string }> = {}
+    type EmailSendResult = Awaited<ReturnType<typeof sendTestEmail>>
+    const results: Record<string, EmailSendResult> = {}
     
     // Test 1: Welcome Email
     console.log('📧 1/11: Testing Welcome Email...')

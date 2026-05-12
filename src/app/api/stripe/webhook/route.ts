@@ -62,25 +62,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
-  // Update user with customer and subscription info
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      stripeCustomerId: session.customer as string,
-      stripeSubscriptionId: session.subscription as string,
-    },
-  })
-
-  // Create notification
-  await prisma.notification.create({
-    data: {
-      userId,
-      type: 'PAYMENT',
-      title: 'Subscription Activated',
-      message: 'Your subscription has been successfully activated!',
-      actionUrl: '/billing',
-    },
-  })
+  await createBillingNotification(
+    userId,
+    'Subscription Activated',
+    'Your subscription has been successfully activated.',
+    '/billing'
+  )
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
@@ -91,126 +78,36 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     return
   }
 
-  const plan = await prisma.plan.findUnique({
-    where: { stripePriceId: subscription.items.data[0].price.id },
-  })
-
-  if (!plan) {
-    console.error('Plan not found for price:', subscription.items.data[0].price.id)
-    return
-  }
-
-  // Upsert subscription
-  await prisma.subscription.upsert({
-    where: { stripeSubscriptionId: subscription.id },
-    create: {
-      userId,
-      planId: plan.id,
-      stripeSubscriptionId: subscription.id,
-      stripeCustomerId: subscription.customer as string,
-      stripePriceId: subscription.items.data[0].price.id,
-      status: subscription.status.toUpperCase() as any,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
-      trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
-      trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-    },
-    update: {
-      status: subscription.status.toUpperCase() as any,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
-    },
-  })
-
-  // Update user
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      stripePriceId: subscription.items.data[0].price.id,
-    },
-  })
+  await createBillingNotification(
+    userId,
+    'Subscription Updated',
+    `Your subscription is now ${subscription.status}.`,
+    '/billing'
+  )
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  await prisma.subscription.updateMany({
-    where: { stripeSubscriptionId: subscription.id },
-    data: {
-      status: 'CANCELED',
-      canceledAt: new Date(),
-    },
-  })
-
-  // Notify user
-  const sub = await prisma.subscription.findUnique({
-    where: { stripeSubscriptionId: subscription.id },
-    include: { user: true },
-  })
-
-  if (sub) {
-    await prisma.notification.create({
-      data: {
-        userId: sub.userId,
-        type: 'PAYMENT',
-        title: 'Subscription Canceled',
-        message: 'Your subscription has been canceled.',
-        actionUrl: '/billing',
-      },
-    })
-  }
+  const userId = subscription.metadata?.userId
+  if (!userId) return
+  await createBillingNotification(
+    userId,
+    'Subscription Canceled',
+    'Your subscription has been canceled.',
+    '/billing'
+  )
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  const userId = invoice.metadata?.userId || invoice.subscription_details?.metadata?.userId
+  const userId = invoice.metadata?.userId
 
   if (!userId) return
 
-  // Create/update invoice record
-  await prisma.invoice.upsert({
-    where: { stripeInvoiceId: invoice.id },
-    create: {
-      userId,
-      stripeInvoiceId: invoice.id,
-      stripeCustomerId: invoice.customer as string,
-      amount: invoice.amount_due,
-      amountPaid: invoice.amount_paid,
-      amountDue: invoice.amount_due - invoice.amount_paid,
-      currency: invoice.currency,
-      status: invoice.status!,
-      invoiceNumber: invoice.number,
-      invoicePdf: invoice.invoice_pdf,
-      hostedInvoiceUrl: invoice.hosted_invoice_url,
-      periodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : null,
-      periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : null,
-      dueDate: invoice.due_date ? new Date(invoice.due_date * 1000) : null,
-      paidAt: invoice.status_transitions.paid_at ? new Date(invoice.status_transitions.paid_at * 1000) : null,
-    },
-    update: {
-      status: invoice.status!,
-      amountPaid: invoice.amount_paid,
-      paidAt: invoice.status_transitions.paid_at ? new Date(invoice.status_transitions.paid_at * 1000) : null,
-    },
-  })
-
-  // Create payment record
-  if (invoice.payment_intent) {
-    await prisma.payment.create({
-      data: {
-        userId,
-        stripePaymentId: invoice.payment_intent as string,
-        amount: invoice.amount_paid,
-        currency: invoice.currency,
-        status: 'SUCCEEDED',
-        description: `Payment for invoice ${invoice.number}`,
-        stripeInvoiceId: invoice.id,
-        receiptUrl: invoice.hosted_invoice_url,
-      },
-    })
-  }
+  await createBillingNotification(
+    userId,
+    'Payment Received',
+    `Invoice ${invoice.number ?? invoice.id} has been paid successfully.`,
+    '/billing'
+  )
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
@@ -218,20 +115,36 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
   if (!userId) return
 
-  // Update invoice
-  await prisma.invoice.updateMany({
-    where: { stripeInvoiceId: invoice.id },
-    data: { status: invoice.status! },
+  await createBillingNotification(
+    userId,
+    'Payment Failed',
+    'Your payment failed. Please update your payment method.',
+    '/billing'
+  )
+}
+
+async function createBillingNotification(
+  userId: string,
+  title: string,
+  content: string,
+  link: string
+) {
+  const profile = await prisma.profile.findFirst({
+    where: {
+      OR: [{ id: userId }, { userId }],
+    },
+    select: { id: true },
   })
 
-  // Notify user
+  if (!profile) return
+
   await prisma.notification.create({
     data: {
-      userId,
+      userId: profile.id,
       type: 'PAYMENT',
-      title: 'Payment Failed',
-      message: 'Your payment failed. Please update your payment method.',
-      actionUrl: '/billing',
+      title,
+      content,
+      link,
     },
   })
 }

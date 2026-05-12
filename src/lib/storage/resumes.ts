@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { STORAGE_BUCKET_NAME } from './bucket'
 
 // Create a separate client for storage operations with service role
 // This allows bypassing RLS policies for server-side operations
@@ -10,8 +11,6 @@ const supabaseStorageClient = createClient(
   supabaseUrl,
   supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
-
-const BUCKET_NAME = 'umt-surge-bucket'
 
 export interface UploadResumeResult {
   storagePath: string
@@ -33,7 +32,7 @@ export async function uploadResume(
 
   // Upload file to Supabase Storage
   const { data, error } = await supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .upload(storagePath, file, {
       cacheControl: '3600',
       upsert: false,
@@ -46,7 +45,7 @@ export async function uploadResume(
 
   // Get public URL
   const { data: urlData } = supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .getPublicUrl(storagePath)
 
   return {
@@ -60,7 +59,7 @@ export async function uploadResume(
  */
 export async function deleteResume(storagePath: string): Promise<void> {
   const { error } = await supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .remove([storagePath])
 
   if (error) {
@@ -76,7 +75,7 @@ export async function getResumeSignedUrl(
   expiresIn: number = 3600
 ): Promise<string> {
   const { data, error } = await supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .createSignedUrl(storagePath, expiresIn)
 
   if (error) {
@@ -93,11 +92,11 @@ export async function initializeResumeBucket(): Promise<void> {
   try {
     // Check if bucket exists
     const { data: buckets } = await supabaseStorageClient.storage.listBuckets()
-    const bucketExists = buckets?.some(bucket => bucket.name === BUCKET_NAME)
+    const bucketExists = buckets?.some(bucket => bucket.name === STORAGE_BUCKET_NAME)
 
     if (!bucketExists) {
       // Create bucket
-      const { error } = await supabaseStorageClient.storage.createBucket(BUCKET_NAME, {
+      const { error } = await supabaseStorageClient.storage.createBucket(STORAGE_BUCKET_NAME, {
         public: true, // Set to true for public access, false for private
         fileSizeLimit: 5242880, // 5MB in bytes
         allowedMimeTypes: [
@@ -111,9 +110,9 @@ export async function initializeResumeBucket(): Promise<void> {
         throw new Error(`Failed to create bucket: ${error.message}`)
       }
 
-      console.log(`✅ Created storage bucket: ${BUCKET_NAME}`)
+      console.log(`✅ Created storage bucket: ${STORAGE_BUCKET_NAME}`)
     } else {
-      console.log(`✅ Storage bucket already exists: ${BUCKET_NAME}`)
+      console.log(`✅ Storage bucket already exists: ${STORAGE_BUCKET_NAME}`)
     }
   } catch (error) {
     console.error('Error initializing storage bucket:', error)

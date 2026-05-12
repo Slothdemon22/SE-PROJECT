@@ -8,6 +8,7 @@ export function LogoutButton() {
   const supabase = createClient()
 
   const handleLogout = async () => {
+    await fetch('/api/admin/hardcoded-logout', { method: 'POST' })
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()

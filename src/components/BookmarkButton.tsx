@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-react'
+import { useToast } from '@/components/ui/toast'
 
 interface BookmarkButtonProps {
   jobId: string
@@ -19,6 +20,7 @@ export function BookmarkButton({
   className = ''
 }: BookmarkButtonProps) {
   const router = useRouter()
+  const toast = useToast()
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -41,6 +43,7 @@ export function BookmarkButton({
         }
 
         setIsBookmarked(false)
+        toast.success('Job removed from saved list')
       } else {
         // Add bookmark
         const response = await fetch('/api/bookmarks', {
@@ -56,11 +59,12 @@ export function BookmarkButton({
         }
 
         setIsBookmarked(true)
+        toast.success('Job saved successfully')
       }
 
       router.refresh()
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to update bookmark')
+      toast.error(error instanceof Error ? error.message : 'Failed to update bookmark')
       // Revert state on error
       setIsBookmarked(!isBookmarked)
     } finally {

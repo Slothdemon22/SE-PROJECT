@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Save, Send, X, Plus, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import AIJobRefiner from '@/components/AIJobRefiner'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { useToast } from '@/components/ui/toast'
 
 const JOB_TYPES = [
   { value: 'ACADEMIC_PROJECT', label: 'Academic Project', description: 'Research, coursework, or academic collaborations' },
@@ -22,9 +27,10 @@ const SUGGESTED_TAGS = [
 interface TagsInputProps {
   tags: string
   onChange: (tags: string) => void
+  onValidationError: (message: string) => void
 }
 
-function TagsInput({ tags, onChange }: TagsInputProps) {
+function TagsInput({ tags, onChange, onValidationError }: TagsInputProps) {
   const [inputValue, setInputValue] = useState('')
   const tagsArray = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : []
 
@@ -34,17 +40,17 @@ function TagsInput({ tags, onChange }: TagsInputProps) {
     if (!trimmedTag) return
     
     if (trimmedTag.length > 50) {
-      alert('Tag name too long (max 50 characters)')
+      onValidationError('Tag name too long (max 50 characters)')
       return
     }
     
     if (tagsArray.length >= 15) {
-      alert('Maximum 15 tags allowed')
+      onValidationError('Maximum 15 tags allowed')
       return
     }
     
     if (tagsArray.includes(trimmedTag)) {
-      alert('This tag already exists')
+      onValidationError('This tag already exists')
       return
     }
     
@@ -137,6 +143,7 @@ interface CreateJobFormProps {
 
 export function CreateJobForm({ profileId }: CreateJobFormProps) {
   const router = useRouter()
+  const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -531,6 +538,7 @@ export function CreateJobForm({ profileId }: CreateJobFormProps) {
             <TagsInput
               tags={formData.tags}
               onChange={(tags: string) => updateField('tags', tags)}
+              onValidationError={(message: string) => toast.warning(message)}
             />
           </Card>
         </div>

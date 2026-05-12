@@ -5,6 +5,7 @@
 
 import * as dotenv from 'dotenv'
 import { initializeResumeBucket } from '../lib/storage/resumes'
+import { STORAGE_BUCKET_NAME } from '../lib/storage/bucket'
 
 // Load environment variables
 dotenv.config()
@@ -18,7 +19,7 @@ async function main() {
     console.log('\n✅ Storage setup complete!')
     console.log('\nNext steps:')
     console.log('1. Go to your Supabase Dashboard')
-    console.log('2. Navigate to Storage > resumes bucket')
+    console.log(`2. Navigate to Storage > ${STORAGE_BUCKET_NAME} bucket`)
     console.log('3. Verify the bucket was created successfully')
     console.log('4. Optionally adjust RLS policies if needed')
     

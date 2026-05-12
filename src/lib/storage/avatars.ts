@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { STORAGE_BUCKET_NAME } from './bucket'
 
 // Create a separate client for storage operations with service role
 // This allows bypassing RLS policies for server-side operations
@@ -10,8 +11,6 @@ const supabaseStorageClient = createClient(
   supabaseUrl,
   supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
-
-const BUCKET_NAME = 'umt-surge-bucket'
 
 export interface UploadAvatarResult {
   storagePath: string
@@ -32,7 +31,7 @@ export async function uploadAvatar(
 
   // Upload file to Supabase Storage
   const { data, error } = await supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .upload(storagePath, file, {
       cacheControl: '3600',
       upsert: false, // Don't overwrite, create new file each time
@@ -45,7 +44,7 @@ export async function uploadAvatar(
 
   // Get public URL
   const { data: urlData } = supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .getPublicUrl(storagePath)
 
   return {
@@ -59,7 +58,7 @@ export async function uploadAvatar(
  */
 export async function deleteAvatar(storagePath: string): Promise<void> {
   const { error } = await supabaseStorageClient.storage
-    .from(BUCKET_NAME)
+    .from(STORAGE_BUCKET_NAME)
     .remove([storagePath])
 
   if (error) {

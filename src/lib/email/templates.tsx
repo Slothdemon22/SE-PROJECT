@@ -79,55 +79,62 @@ interface JobFilledEmailProps {
 // Base HTML template with styling (for Resend)
 const emailStyles = {
   body: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     lineHeight: '1.6',
-    color: '#333',
-    backgroundColor: '#f5f5f5',
+    color: '#0f172a',
+    backgroundColor: '#f1f5f9',
     margin: '0',
-    padding: '0',
+    padding: '24px 0',
   },
   container: {
-    maxWidth: '600px',
-    margin: '40px auto',
-    background: 'white',
-    borderRadius: '12px',
+    maxWidth: '640px',
+    margin: '0 auto',
+    background: '#ffffff',
+    borderRadius: '16px',
+    border: '1px solid #e2e8f0',
     overflow: 'hidden',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 24px 48px rgba(15, 23, 42, 0.12)',
   },
   header: {
-    background: 'linear-gradient(135deg, #1E3A8A, #3B82F6)',
-    padding: '30px',
+    background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+    padding: '28px 32px',
     textAlign: 'center' as const,
     color: 'white',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
   },
   content: {
-    padding: '40px 30px',
+    padding: '36px 32px',
+    color: '#334155',
   },
   button: {
     display: 'inline-block',
-    padding: '14px 32px',
-    background: 'linear-gradient(135deg, #1E3A8A, #3B82F6)',
+    padding: '12px 24px',
+    background: '#1d4ed8',
     color: 'white',
     textDecoration: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontWeight: '600',
-    margin: '20px 0',
+    fontSize: '14px',
+    letterSpacing: '0.2px',
+    margin: '18px 0',
     textAlign: 'center' as const,
+    boxShadow: '0 8px 20px rgba(29, 78, 216, 0.3)',
   },
   footer: {
-    background: '#f9fafb',
-    padding: '20px 30px',
+    background: '#f8fafc',
+    padding: '22px 32px',
     textAlign: 'center' as const,
-    color: '#6b7280',
-    fontSize: '14px',
-    borderTop: '1px solid #e5e7eb',
+    color: '#64748b',
+    fontSize: '13px',
+    borderTop: '1px solid #e2e8f0',
   },
   highlight: {
-    background: '#EFF6FF',
-    padding: '16px',
-    borderLeft: '4px solid #3B82F6',
-    borderRadius: '4px',
-    margin: '20px 0',
+    background: '#f8fafc',
+    padding: '16px 18px',
+    border: '1px solid #dbeafe',
+    borderLeft: '4px solid #2563eb',
+    borderRadius: '10px',
+    margin: '18px 0',
   },
 }
 
@@ -145,17 +152,17 @@ export function WelcomeEmail({ userName, appUrl }: WelcomeEmailProps & { appUrl?
           </h1>
         </div>
         <div style={emailStyles.content}>
-          <h2>Welcome to {EMAIL_CONFIG.appName}! 🎉</h2>
+          <h2 style={{ marginTop: 0, fontSize: '24px', color: '#0f172a' }}>Welcome to {EMAIL_CONFIG.appName}</h2>
           <p>Hi {userName},</p>
-          <p>Thank you for joining {EMAIL_CONFIG.appName}! We're excited to have you on board.</p>
+          <p>Thanks for joining. Your account is now active and ready.</p>
           
           <div style={emailStyles.highlight}>
-            <p><strong>🚀 Get Started:</strong></p>
+            <p><strong>Get started in under 2 minutes:</strong></p>
             <ul>
-              <li>Complete your profile to stand out</li>
-              <li>Browse amazing opportunities</li>
-              <li>Connect with talented students</li>
-              <li>Start collaborating on projects</li>
+              <li>Complete your profile for better matching</li>
+              <li>Explore active opportunities</li>
+              <li>Save roles and track applications in one place</li>
+              <li>Connect with people relevant to your goals</li>
             </ul>
           </div>
           
@@ -163,7 +170,7 @@ export function WelcomeEmail({ userName, appUrl }: WelcomeEmailProps & { appUrl?
             <a href={profileLink} style={emailStyles.button}>Complete Your Profile</a>
           </div>
           
-          <p>If you have any questions, feel free to reach out to our support team.</p>
+          <p>If you need help, reply to this email and our team will assist you.</p>
           <p>Best regards,<br/>The {EMAIL_CONFIG.appName} Team</p>
         </div>
         <div style={emailStyles.footer}>
@@ -186,9 +193,9 @@ export function JobApprovedEmail({ userName, jobTitle, jobLink }: JobApprovedEma
           </h1>
         </div>
         <div style={emailStyles.content}>
-          <h2 style={{ color: '#059669' }}>✅ Your Job Has Been Approved!</h2>
+          <h2 style={{ marginTop: 0, color: '#059669', fontSize: '24px' }}>Your Job Is Live</h2>
           <p>Hi {userName},</p>
-          <p>Great news! Your job posting has been approved by our admin team and is now live.</p>
+          <p>Your posting has been approved and is now visible to candidates.</p>
           
           <div style={emailStyles.highlight}>
             <p><strong>Job Details:</strong></p>
@@ -200,11 +207,11 @@ export function JobApprovedEmail({ userName, jobTitle, jobLink }: JobApprovedEma
             <a href={jobLink} style={emailStyles.button}>View Your Job</a>
           </div>
           
-          <p><strong>Next Steps:</strong></p>
+          <p><strong>Recommended next steps:</strong></p>
           <ul>
-            <li>Monitor applications at your job dashboard</li>
-            <li>Review candidate profiles and proposals</li>
-            <li>Schedule video interviews with top candidates</li>
+            <li>Review incoming applications promptly</li>
+            <li>Shortlist top candidates early</li>
+            <li>Schedule interviews with high-match applicants</li>
             <li>Mark the position as filled when you find the right match</li>
           </ul>
           
@@ -316,9 +323,9 @@ export function ApplicationReceivedEmail({
           </h1>
         </div>
         <div style={emailStyles.content}>
-          <h2>📩 New Application Received!</h2>
+          <h2 style={{ marginTop: 0, fontSize: '24px', color: '#0f172a' }}>New Application Received</h2>
           <p>Hi {posterName},</p>
-          <p>You've received a new application for your job posting!</p>
+          <p>You have a new applicant waiting for review.</p>
           
           <div style={emailStyles.highlight}>
             <p><strong>Applicant:</strong> {applicantName}</p>
@@ -330,11 +337,11 @@ export function ApplicationReceivedEmail({
             <a href={applicationLink} style={emailStyles.button}>Review Application</a>
           </div>
           
-          <p><strong>Quick Actions:</strong></p>
+          <p><strong>Suggested review flow:</strong></p>
           <ul>
-            <li>Read their proposal and review their resume</li>
-            <li>Shortlist promising candidates</li>
-            <li>Schedule video interviews</li>
+            <li>Read proposal and resume</li>
+            <li>Shortlist strong candidates</li>
+            <li>Schedule interview if relevant</li>
             <li>Accept or reject applications</li>
           </ul>
           
@@ -385,7 +392,7 @@ export function ApplicationStatusEmail({
           </h1>
         </div>
         <div style={emailStyles.content}>
-          <h2 style={{ color: config.color }}>{config.icon} Application Update</h2>
+          <h2 style={{ marginTop: 0, color: config.color, fontSize: '24px' }}>{config.icon} Application Update</h2>
           <p>Hi {applicantName},</p>
           <p>We have an update regarding your application.</p>
           
