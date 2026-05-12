@@ -498,4 +498,3 @@ This project was built for Surge '25 Web Hackathon. For questions or contributio
 **Built with ❤️ by the CampusConnect Team**
 
 *Last updated: January 2025*
-
